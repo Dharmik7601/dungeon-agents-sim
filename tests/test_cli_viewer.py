@@ -366,6 +366,7 @@ def _event_with_agent_input(agent_id="agent_a", turn=3, status="success"):
                     {"tool_name": "look", "arguments": {}, "turn_number": 0},
                     {"tool_name": "move", "arguments": {"direction": "east"}, "turn_number": 1},
                 ],
+                "last_known_location": {"position": [2, 4], "turn_number": 2},
             },
         },
         "execution_result": {
@@ -486,3 +487,72 @@ class TestIntegration:
             main(["--log-file", str(log), "--filter", "failures_only", "--agent", "agent_b"])
         except SystemExit as e:
             assert e.code == 0
+
+
+# ---------------------------------------------------------------------------
+# Input / Output section labels and last_known_location and error_message
+# ---------------------------------------------------------------------------
+
+class TestRenderSuccessLabels:
+    def test_shows_input_label(self):
+        from src.cli.diagnostic_viewer import render_success
+        console, buf = _make_console()
+        render_success(_event_with_agent_input(), console)
+        assert "Input" in buf.getvalue() or "INPUT" in buf.getvalue()
+
+    def test_shows_output_label(self):
+        from src.cli.diagnostic_viewer import render_success
+        console, buf = _make_console()
+        render_success(_event_with_agent_input(), console)
+        assert "Output" in buf.getvalue() or "OUTPUT" in buf.getvalue()
+
+    def test_shows_last_known_location(self):
+        from src.cli.diagnostic_viewer import render_success
+        console, buf = _make_console()
+        render_success(_event_with_agent_input(), console)
+        out = buf.getvalue()
+        assert "2" in out and "4" in out  # position [2, 4]
+
+    def test_no_crash_without_last_known_location(self):
+        from src.cli.diagnostic_viewer import render_success
+        console, buf = _make_console()
+        render_success(_success_event(), console)  # old event, no agent_input
+
+
+class TestRenderIncidentLabels:
+    def test_panel_shows_input_label(self):
+        from src.cli.diagnostic_viewer import render_incident
+        console, buf = _make_console()
+        render_incident(_event_with_agent_input(status="failure"), console)
+        assert "Input" in buf.getvalue() or "INPUT" in buf.getvalue()
+
+    def test_panel_shows_output_label(self):
+        from src.cli.diagnostic_viewer import render_incident
+        console, buf = _make_console()
+        render_incident(_event_with_agent_input(status="failure"), console)
+        assert "Output" in buf.getvalue() or "OUTPUT" in buf.getvalue()
+
+    def test_panel_shows_result_label(self):
+        from src.cli.diagnostic_viewer import render_incident
+        console, buf = _make_console()
+        render_incident(_event_with_agent_input(status="failure"), console)
+        assert "Result" in buf.getvalue() or "RESULT" in buf.getvalue()
+
+    def test_panel_shows_error_message(self):
+        from src.cli.diagnostic_viewer import render_incident
+        console, buf = _make_console()
+        event = _failure_event()  # has error_message "No item here."
+        render_incident(event, console)
+        assert "No item here." in buf.getvalue()
+
+    def test_panel_shows_last_known_location(self):
+        from src.cli.diagnostic_viewer import render_incident
+        console, buf = _make_console()
+        render_incident(_event_with_agent_input(status="failure"), console)
+        out = buf.getvalue()
+        assert "2" in out and "4" in out  # position [2, 4] from fixture
+
+    def test_no_crash_without_last_known_location(self):
+        from src.cli.diagnostic_viewer import render_incident
+        console, buf = _make_console()
+        render_incident(_failure_event(), console)

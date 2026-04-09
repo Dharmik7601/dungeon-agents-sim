@@ -38,116 +38,101 @@ def _fmt_diff(deltas: list[dict]) -> str:
 # Renderers
 # ---------------------------------------------------------------------------
 
-def _fmt_agent_input_compact(event: dict) -> str:
-    """Return a compact one-block string summarising the agent's prompt input."""
+def _fmt_location(loc: dict | None) -> str:
+    if loc:
+        return f"({loc['position'][0]}, {loc['position'][1]}) confirmed on turn {loc['turn_number']}"
+    return "(unknown)"
+
+
+def _fmt_input_lines(event: dict, indent: str = "  ") -> list[str]:
+    """Build Input section lines shared by success and incident renders."""
     ctx = event.get("state_context", {})
     ai = ctx.get("agent_input", {})
     shadow = ctx.get("shadow_state", {})
 
-    shadow_count = len(shadow)
+    lines: list[str] = []
+    lines.append(f"{indent}Last known location: {_fmt_location(ai.get('last_known_location'))}")
+    lines.append(f"{indent}Shadow: {len(shadow)} cells observed")
+
     inbox = ai.get("message_inbox") or []
+    lines.append(f"{indent}Inbox: {'; '.join(inbox) if inbox else '(none)'}")
+
     mistake = ai.get("last_mistake")
-    calls = ai.get("recent_calls") or []
-
-    lines: list[str] = [f"  Shadow: {shadow_count} cells observed"]
-
-    inbox_str = "; ".join(inbox) if inbox else "(none)"
-    lines.append(f"  Inbox: {inbox_str}")
-
     if mistake:
-        lines.append(f"  Last mistake: {mistake['tool_name']} on turn {mistake['turn_number']} — {mistake['reason']}")
+        lines.append(f"{indent}Last mistake: {mistake['tool_name']} on turn {mistake['turn_number']} — {mistake['reason']}")
     else:
-        lines.append("  Last mistake: (none)")
+        lines.append(f"{indent}Last mistake: (none)")
 
+    calls = ai.get("recent_calls") or []
     if calls:
         call_parts = []
         for c in calls:
             a = ", ".join(f"{k}={v!r}" for k, v in c.get("arguments", {}).items())
             call_parts.append(f"T{c['turn_number']}: {c['tool_name']}({a})")
-        lines.append(f"  Recent calls: {', '.join(call_parts)}")
+        lines.append(f"{indent}Recent calls: {', '.join(call_parts)}")
     else:
-        lines.append("  Recent calls: (none)")
+        lines.append(f"{indent}Recent calls: (none)")
 
-    return "\n".join(lines)
+    return lines
 
 
 def render_success(event: dict, console: Console) -> None:
-    """Render a successful turn as a dim entry with reasoning and agent input context."""
+    """Render a successful turn with clear Input / Output sections (dim)."""
     turn = event["turn_number"]
     agent_id = event["agent_id"]
     tool_name = event["action"]["tool_name"]
     args = event["action"].get("arguments", {})
     args_str = ", ".join(f"{k}={v!r}" for k, v in args.items()) if args else ""
     reasoning = event["state_context"]["agent_beliefs"].get("reasoning", "")
+
     console.print(Text(f"[Turn {turn}] {agent_id} \u2713 {tool_name}({args_str})", style="dim"))
+    console.print(Text("  \u2500\u2500 Input \u2500\u2500", style="dim"))
+    for line in _fmt_input_lines(event):
+        console.print(Text(line, style="dim"))
+    console.print(Text("  \u2500\u2500 Output \u2500\u2500", style="dim"))
     if reasoning:
-        console.print(Text(f"  \"{reasoning}\"", style="dim italic"))
-    console.print(Text(_fmt_agent_input_compact(event), style="dim"))
+        console.print(Text(f"  Reasoning: \"{reasoning}\"", style="dim italic"))
 
 
 def render_incident(event: dict, console: Console) -> None:
-    """Render a failed turn as a high-visibility red Incident Block Panel."""
+    """Render a failed turn as a red Panel with Input / Output / Result sections."""
     turn = event["turn_number"]
     agent_id = event["agent_id"]
     tool_name = event["action"]["tool_name"]
     args = event["action"].get("arguments", {})
     args_str = ", ".join(f"{k}={v!r}" for k, v in args.items()) if args else ""
     reasoning = event["state_context"]["agent_beliefs"].get("reasoning", "")
+    error_msg = event["execution_result"].get("error_message") or ""
     deltas = event["execution_result"].get("deltas", [])
+    ctx = event.get("state_context", {})
+    shadow = ctx.get("shadow_state", {})
 
-    # Build panel content
     content_lines: list[str] = []
 
-    # Section 1 — What Happened
-    content_lines.append("[bold]What Happened[/bold]")
-    content_lines.append(f"  {tool_name}({args_str})")
+    # ── Input ────────────────────────────────────────────────────────────────
+    content_lines.append("[bold]── Input ──[/bold]")
+    content_lines.extend(_fmt_input_lines(event))
+    if shadow:
+        content_lines.append("  Shadow state:")
+        for key, val in sorted(shadow.items()):
+            content_lines.append(f"    {key}: {val}")
     content_lines.append("")
 
-    # Section 2 — State Desync Diff
-    content_lines.append("[bold]State Desync Diff[/bold]")
+    # ── Output ───────────────────────────────────────────────────────────────
+    content_lines.append("[bold]── Output ──[/bold]")
+    content_lines.append(f"  Reasoning: [italic]{reasoning}[/italic]")
+    content_lines.append(f"  Action: {tool_name}({args_str})")
+    content_lines.append("")
+
+    # ── Result ───────────────────────────────────────────────────────────────
+    content_lines.append("[bold]── Result ──[/bold]")
+    if error_msg:
+        content_lines.append(f"  Error: {error_msg}")
     if deltas:
+        content_lines.append("  State Desync Diff:")
         content_lines.append(_fmt_diff(deltas))
     else:
-        content_lines.append("  (no deltas)")
-    content_lines.append("")
-
-    # Section 3 — Agent Reasoning
-    content_lines.append("[bold]Agent Reasoning[/bold]")
-    content_lines.append(f"  [italic]{reasoning}[/italic]")
-    content_lines.append("")
-
-    # Section 4 — Agent Input State (what was in the prompt)
-    ctx = event.get("state_context", {})
-    ai = ctx.get("agent_input", {})
-    inbox = ai.get("message_inbox") or []
-    mistake = ai.get("last_mistake")
-    calls = ai.get("recent_calls") or []
-
-    content_lines.append("[bold]Agent Input State[/bold]")
-    inbox_str = "; ".join(inbox) if inbox else "(none)"
-    content_lines.append(f"  Inbox: {inbox_str}")
-    if mistake:
-        content_lines.append(
-            f"  Last mistake: {mistake['tool_name']} on turn {mistake['turn_number']} — {mistake['reason']}"
-        )
-    else:
-        content_lines.append("  Last mistake: (none)")
-    if calls:
-        for c in calls:
-            c_args = ", ".join(f"{k}={v!r}" for k, v in c.get("arguments", {}).items())
-            content_lines.append(f"    T{c['turn_number']}: {c['tool_name']}({c_args})")
-    else:
-        content_lines.append("  Recent calls: (none)")
-    content_lines.append("")
-
-    # Section 5 — Shadow State
-    shadow = ctx.get("shadow_state", {})
-    content_lines.append("[bold]Shadow State[/bold]")
-    if shadow:
-        for key, val in sorted(shadow.items()):
-            content_lines.append(f"  {key}: {val}")
-    else:
-        content_lines.append("  (no cells observed)")
+        content_lines.append("  State Desync Diff: (no deltas)")
 
     body = "\n".join(content_lines)
     panel = Panel(

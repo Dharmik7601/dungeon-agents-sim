@@ -310,6 +310,41 @@ def test_logger_receives_agent_input_kwargs():
     assert call_kwargs["message_inbox"] == ["msg from B"]
     assert call_kwargs["last_mistake_before"]["tool_name"] == "move"
     assert call_kwargs["recent_calls_before"] == [{"tool_name": "look", "arguments": {}, "turn_number": 0}]
+    assert "last_known_location_before" in call_kwargs
+
+
+def test_logger_receives_last_known_location_when_set():
+    world = _make_world()
+    agent_a = _make_agent("agent_a", (2, 3))
+    agent_a.last_known_position = (2, 3)
+    agent_a.last_known_position_turn = 4
+
+    llm_a = MagicMock()
+    llm_a.get_decision.return_value = _look_response()
+    logger = MagicMock()
+
+    loop = _make_loop(world=world, agent_a=agent_a, llm_a=llm_a, logger=logger, max_turns=1)
+    loop.run()
+
+    call_kwargs = logger.log_event.call_args_list[0][1]
+    loc = call_kwargs["last_known_location_before"]
+    assert loc == {"position": [2, 3], "turn_number": 4}
+
+
+def test_logger_receives_null_location_when_never_set():
+    world = _make_world()
+    agent_a = _make_agent("agent_a", (0, 0))
+    # last_known_position is None by default
+
+    llm_a = MagicMock()
+    llm_a.get_decision.return_value = _look_response()
+    logger = MagicMock()
+
+    loop = _make_loop(world=world, agent_a=agent_a, llm_a=llm_a, logger=logger, max_turns=1)
+    loop.run()
+
+    call_kwargs = logger.log_event.call_args_list[0][1]
+    assert call_kwargs["last_known_location_before"] is None
 
 
 def test_turn_number_increments_each_round():

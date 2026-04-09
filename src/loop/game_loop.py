@@ -111,6 +111,13 @@ class GameLoop:
         recent_calls_snapshot = list(agent.recent_calls)
         last_mistake_snapshot = dict(agent.last_mistake) if agent.last_mistake else None
         message_inbox_snapshot = list(agent.message_inbox)
+        if agent.last_known_position is not None:
+            last_known_location_snapshot = {
+                "position": list(agent.last_known_position),
+                "turn_number": agent.last_known_position_turn,
+            }
+        else:
+            last_known_location_snapshot = None
 
         # Execute tool
         result = ToolDispatcher.dispatch(
@@ -145,6 +152,7 @@ class GameLoop:
             message_inbox=message_inbox_snapshot,
             recent_calls_before=recent_calls_snapshot,
             last_mistake_before=last_mistake_snapshot,
+            last_known_location_before=last_known_location_snapshot,
         )
 
         # Check action deadlock

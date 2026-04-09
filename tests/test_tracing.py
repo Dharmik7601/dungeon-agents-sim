@@ -536,3 +536,42 @@ def test_langfuse_wrapper_falls_back_when_not_configured():
 
     assert result == expected_response
     mock_llm.get_decision.assert_called_once_with(agent, world)
+
+
+# ---------------------------------------------------------------------------
+# agent_input — last_known_location
+# ---------------------------------------------------------------------------
+
+def test_log_event_agent_input_includes_last_known_location():
+    logger = SemanticLogger()
+    world = _make_world()
+
+    logger.log_event(
+        turn_number=5,
+        agent_id="agent_a",
+        llm_response=_look_llm(),
+        shadow_state_before={},
+        tool_result=_success_result(),
+        world=world,
+        last_known_location_before={"position": [3, 4], "turn_number": 3},
+    )
+
+    ai = logger._events[0]["state_context"]["agent_input"]
+    assert ai["last_known_location"] == {"position": [3, 4], "turn_number": 3}
+
+
+def test_log_event_agent_input_last_known_location_null_when_not_provided():
+    logger = SemanticLogger()
+    world = _make_world()
+
+    logger.log_event(
+        turn_number=0,
+        agent_id="agent_a",
+        llm_response=_look_llm(),
+        shadow_state_before={},
+        tool_result=_success_result(),
+        world=world,
+    )
+
+    ai = logger._events[0]["state_context"]["agent_input"]
+    assert ai["last_known_location"] is None

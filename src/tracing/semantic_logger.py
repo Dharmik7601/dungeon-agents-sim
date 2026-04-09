@@ -157,6 +157,7 @@ class SemanticLogger:
         message_inbox: list | None = None,
         recent_calls_before: list | None = None,
         last_mistake_before: dict | None = None,
+        last_known_location_before: dict | None = None,
     ) -> None:
         agent_pos = world.agent_positions.get(agent_id, (0, 0))
         ground_truth = _ground_truth_snapshot(world)
@@ -198,6 +199,7 @@ class SemanticLogger:
                     "message_inbox": list(message_inbox) if message_inbox else [],
                     "recent_calls": list(recent_calls_before) if recent_calls_before else [],
                     "last_mistake": dict(last_mistake_before) if last_mistake_before else None,
+                    "last_known_location": dict(last_known_location_before) if last_known_location_before else None,
                 },
             },
             "execution_result": {
