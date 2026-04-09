@@ -24,9 +24,9 @@
 - [x] Integration tests for game-loop
 
 ## tracing
-- [ ] Implement `SemanticLogger`: event accumulation, delta computation (Scenario Mapping Matrix), JSON flush to `data/` (`src/tracing/semantic_logger.py`)
-- [ ] Implement Langfuse `@observe` wrapper and run metadata tagging (`src/tracing/langfuse_wrapper.py`)
-- [ ] Integration tests for tracing
+- [x] Implement `SemanticLogger`: event accumulation, delta computation (Scenario Mapping Matrix), JSON flush to `data/` (`src/tracing/semantic_logger.py`)
+- [x] Implement Langfuse `@observe` wrapper and run metadata tagging (`src/tracing/langfuse_wrapper.py`)
+- [x] Integration tests for tracing
 
 ## cli-viewer
 - [ ] Implement `diagnostic_viewer.py` with `argparse` CLI (`--log-file`, `--filter`, `--agent`) (`src/cli/diagnostic_viewer.py`)
