@@ -29,9 +29,9 @@
 - [x] Integration tests for tracing
 
 ## cli-viewer
-- [ ] Implement `diagnostic_viewer.py` with `argparse` CLI (`--log-file`, `--filter`, `--agent`) (`src/cli/diagnostic_viewer.py`)
-- [ ] Implement `rich` rendering: dim success lines and red Incident Blocks with diff + reasoning sections (`src/cli/diagnostic_viewer.py`)
-- [ ] Integration tests for cli-viewer
+- [x] Implement `diagnostic_viewer.py` with `argparse` CLI (`--log-file`, `--filter`, `--agent`) (`src/cli/diagnostic_viewer.py`)
+- [x] Implement `rich` rendering: dim success lines and red Incident Blocks with diff + reasoning sections (`src/cli/diagnostic_viewer.py`)
+- [x] Integration tests for cli-viewer
 
 ## end-to-end
 - [ ] End-to-end smoke test: run a full simulation, assert `run_*.json` is produced with valid schema, assert CLI viewer exits cleanly on that file
