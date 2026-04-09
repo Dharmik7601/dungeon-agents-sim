@@ -13,10 +13,10 @@
 - [x] Integration tests for world
 
 ## agents
-- [ ] Implement `AgentState` dataclass with shadow map, inventory, message queues, and deadlock counters (`src/agents/state.py`)
-- [ ] Implement `ToolDispatcher` with all 7 tool handlers enforcing the ground-truth / shadow-state invariant (`src/agents/tools.py`)
-- [ ] Implement `LLMClient` wrapping the Google Generative AI SDK with prompt injection and JSON response parsing (`src/agents/llm_client.py`)
-- [ ] Integration tests for agents
+- [x] Implement `AgentState` dataclass with shadow map, inventory, message queues, and deadlock counters (`src/agents/state.py`)
+- [x] Implement `ToolDispatcher` with all 7 tool handlers enforcing the ground-truth / shadow-state invariant (`src/agents/tools.py`)
+- [x] Implement `LLMClient` wrapping the Google Generative AI SDK with prompt injection and JSON response parsing (`src/agents/llm_client.py`)
+- [x] Integration tests for agents
 
 ## game-loop
 - [ ] Implement `GameLoop` orchestrator: turn sequencing, message delivery, end-condition checking (`src/loop/game_loop.py`)

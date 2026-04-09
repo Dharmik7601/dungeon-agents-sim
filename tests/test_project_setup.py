@@ -11,7 +11,7 @@ def test_pyproject_runtime_deps():
         data = tomllib.load(f)
     deps = data["project"]["dependencies"]
     dep_names = [d.split(">=")[0].split("==")[0].strip() for d in deps]
-    assert "google-generativeai" in dep_names
+    assert "google-genai" in dep_names
     assert "langfuse" in dep_names
     assert "rich" in dep_names
 
