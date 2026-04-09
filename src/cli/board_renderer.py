@@ -70,15 +70,23 @@ def render_board_live(world: WorldState) -> Table:
 
 def render_board_from_snapshot(ground_truth: dict) -> Table:
     """Render the board from a ground_truth snapshot dict (from a semantic log event)."""
-    # Infer grid dimensions from keys
-    max_x = max_y = 0
-    for key in ground_truth:
-        if key.startswith("cell_status_"):
-            parts = key.split("_")
-            max_x = max(max_x, int(parts[2]))
-            max_y = max(max_y, int(parts[3]))
-
-    width, height = max_x + 1, max_y + 1
+    if "grid_width" in ground_truth and "grid_height" in ground_truth:
+        width = ground_truth["grid_width"]
+        height = ground_truth["grid_height"]
+    else:
+        # Legacy fallback: infer from cell keys and agent positions
+        max_x = max_y = 0
+        for key in ground_truth:
+            if key.startswith("cell_status_"):
+                parts = key.split("_")
+                max_x = max(max_x, int(parts[2]))
+                max_y = max(max_y, int(parts[3]))
+        for pos_key in ("agent_a_position", "agent_b_position"):
+            pos = ground_truth.get(pos_key)
+            if pos and pos[0] >= 0:
+                max_x = max(max_x, pos[0])
+                max_y = max(max_y, pos[1])
+        width, height = max_x + 1, max_y + 1
     raw_a = ground_truth.get("agent_a_position", [-1, -1])
     raw_b = ground_truth.get("agent_b_position", [-1, -1])
     pos_a = (raw_a[0], raw_a[1])

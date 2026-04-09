@@ -339,6 +339,114 @@ class TestMainExitCodes:
 # Integration
 # ---------------------------------------------------------------------------
 
+def _event_with_agent_input(agent_id="agent_a", turn=3, status="success"):
+    """Event fixture with full agent_input and shadow_state in state_context."""
+    return {
+        "event_id": "evt-003",
+        "timestamp": "2024-01-01T00:00:02+00:00",
+        "turn_number": turn,
+        "agent_id": agent_id,
+        "action": {
+            "tool_name": "look",
+            "arguments": {},
+        },
+        "state_context": {
+            "agent_beliefs": {
+                "reasoning": "Exploring the dungeon.",
+                "expected_state": {},
+            },
+            "shadow_state": {
+                "cell_status_0_0": "empty",
+                "cell_status_1_0": "wall",
+            },
+            "agent_input": {
+                "message_inbox": ["partner says: key is at (3,3)"],
+                "last_mistake": {"tool_name": "move", "turn_number": 1, "reason": "wall"},
+                "recent_calls": [
+                    {"tool_name": "look", "arguments": {}, "turn_number": 0},
+                    {"tool_name": "move", "arguments": {"direction": "east"}, "turn_number": 1},
+                ],
+            },
+        },
+        "execution_result": {
+            "status": status,
+            "error_message": None if status == "success" else "fail",
+            "deltas": [],
+        },
+    }
+
+
+class TestRenderSuccessAgentInput:
+    def test_renders_message_inbox(self):
+        from src.cli.diagnostic_viewer import render_success
+        console, buf = _make_console()
+        render_success(_event_with_agent_input(), console)
+        assert "key is at (3,3)" in buf.getvalue()
+
+    def test_renders_last_mistake(self):
+        from src.cli.diagnostic_viewer import render_success
+        console, buf = _make_console()
+        render_success(_event_with_agent_input(), console)
+        assert "move" in buf.getvalue()
+        assert "wall" in buf.getvalue()
+
+    def test_renders_recent_calls(self):
+        from src.cli.diagnostic_viewer import render_success
+        console, buf = _make_console()
+        render_success(_event_with_agent_input(), console)
+        out = buf.getvalue()
+        assert "look" in out
+
+    def test_renders_shadow_state_summary(self):
+        from src.cli.diagnostic_viewer import render_success
+        console, buf = _make_console()
+        render_success(_event_with_agent_input(), console)
+        out = buf.getvalue()
+        # 2 cells in shadow_state
+        assert "2" in out
+
+    def test_no_crash_without_agent_input(self):
+        from src.cli.diagnostic_viewer import render_success
+        console, buf = _make_console()
+        render_success(_success_event(), console)  # old event, no agent_input
+
+
+class TestRenderIncidentAgentInput:
+    def test_panel_contains_inbox(self):
+        from src.cli.diagnostic_viewer import render_incident
+        console, buf = _make_console()
+        render_incident(_event_with_agent_input(status="failure"), console)
+        assert "key is at (3,3)" in buf.getvalue()
+
+    def test_panel_contains_last_mistake(self):
+        from src.cli.diagnostic_viewer import render_incident
+        console, buf = _make_console()
+        render_incident(_event_with_agent_input(status="failure"), console)
+        assert "wall" in buf.getvalue()
+
+    def test_panel_contains_recent_calls(self):
+        from src.cli.diagnostic_viewer import render_incident
+        console, buf = _make_console()
+        render_incident(_event_with_agent_input(status="failure"), console)
+        assert "move" in buf.getvalue()
+
+    def test_panel_contains_shadow_state(self):
+        from src.cli.diagnostic_viewer import render_incident
+        console, buf = _make_console()
+        render_incident(_event_with_agent_input(status="failure"), console)
+        out = buf.getvalue()
+        assert "wall" in out  # cell_status_1_0 is wall in shadow_state
+
+    def test_no_crash_without_agent_input(self):
+        from src.cli.diagnostic_viewer import render_incident
+        console, buf = _make_console()
+        render_incident(_failure_event(), console)  # old event, no agent_input
+
+
+# ---------------------------------------------------------------------------
+# Integration
+# ---------------------------------------------------------------------------
+
 class TestIntegration:
     def test_main_on_mixed_log_exits_0(self, tmp_path):
         """Running main on a valid mixed log (1 success + 1 failure) exits cleanly."""

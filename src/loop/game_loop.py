@@ -106,8 +106,11 @@ class GameLoop:
                 return EndCondition.PARSE_DEADLOCK
             return None
 
-        # Snapshot shadow state before action (for tracing)
+        # Snapshot state as it was when the LLM was called (before dispatch mutates it)
         shadow_snapshot = dict(agent.shadow_map)
+        recent_calls_snapshot = list(agent.recent_calls)
+        last_mistake_snapshot = dict(agent.last_mistake) if agent.last_mistake else None
+        message_inbox_snapshot = list(agent.message_inbox)
 
         # Execute tool
         result = ToolDispatcher.dispatch(
@@ -139,6 +142,9 @@ class GameLoop:
             shadow_state_before=shadow_snapshot,
             tool_result=result,
             world=self._world,
+            message_inbox=message_inbox_snapshot,
+            recent_calls_before=recent_calls_snapshot,
+            last_mistake_before=last_mistake_snapshot,
         )
 
         # Check action deadlock

@@ -16,11 +16,13 @@ A standalone diagnostic replay tool that parses a `run_*.json` semantic log and 
 - Load and parse JSON file.
 - Iterate events in order, applying `--filter` and `--agent` filters.
 - For each passing event:
-  - **Success** → `rich.text.Text` with `dim` style: `[Turn X] {agent_id} ✓ {tool_name}({args})`
-  - **Failure** → `rich.panel.Panel` with red border containing three sections:
+  - **Success** → `rich.text.Text` with `dim` style: `[Turn X] {agent_id} ✓ {tool_name}({args})`, reasoning quote, then a compact `agent_input` block (shadow cell count, inbox, last mistake, recent calls)
+  - **Failure** → `rich.panel.Panel` with red border containing five sections:
     1. **What Happened** — tool + args from `action`
-    2. **State Desync Diff** — rendered from `execution_result.deltas`; each delta shown as `EXPECTED: {key} = {expected_value}` / `ACTUAL: {key} = {actual_value}` / `Source: {discrepancy_source}`
+    2. **State Desync Diff** — rendered from `execution_result.deltas`
     3. **Agent Reasoning** — italicised quote from `state_context.agent_beliefs.reasoning`
+    4. **Agent Input State** — inbox messages, last mistake, recent calls from `state_context.agent_input`
+    5. **Shadow State** — all cells from `state_context.shadow_state`
 
 **Exit codes:** 0 on success, 1 on missing file or invalid JSON.
 
@@ -35,6 +37,6 @@ A standalone diagnostic replay tool that parses a `run_*.json` semantic log and 
 - `tests/test_cli_viewer.py` — full test suite
 
 ## Testing
-- **Unit** — `_fmt_diff` formats property key, discrepancy source, EXPECTED/ACTUAL labels, multiple deltas, and empty list; `render_success` renders turn number, agent ID, tool name as dim Text (not a Panel); `render_incident` prints a Panel containing tool name, reasoning, delta property key, and discrepancy source
+- **Unit** — `_fmt_diff` formats property key, discrepancy source, EXPECTED/ACTUAL labels, multiple deltas, and empty list; `render_success` renders turn number, agent ID, tool name, reasoning, and compact agent_input block (inbox, last mistake, recent calls, shadow cell count); `render_incident` prints a Panel containing tool name, reasoning, delta property key, discrepancy source, agent input state (inbox, last mistake, recent calls), and shadow state cells; both renderers handle events without `agent_input` key without crashing
 - **Integration** — `render_log` with `all` calls both renderers; `failures_only` skips success events; `--agent` filter skips the other agent; empty event list and all-success list with `failures_only` render nothing; `main()` on a mixed log exits 0; `--agent` and `--filter` flags accepted together
 - **Edge cases** — non-existent `--log-file` prints a clear error to stderr and exits 1; invalid JSON exits 1; empty log exits 0; `failures_only` on a log with no failures exits 0

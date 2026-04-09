@@ -69,8 +69,23 @@ def test_ground_truth_snapshot_includes_cell_statuses():
     assert snapshot.get("cell_status_3_3") == "key"
     # Exit cell
     assert snapshot.get("cell_status_6_6") == "exit_locked"
-    # Empty cell
-    assert snapshot.get("cell_status_0_0") == "empty"
+    # Empty cells must NOT appear in the sparse snapshot
+    assert "cell_status_0_0" not in snapshot
+
+
+def test_ground_truth_snapshot_excludes_empty_cells():
+    world = _make_world()
+    snapshot = _ground_truth_snapshot(world)
+    # No key in snapshot should have value "empty"
+    empty_keys = [k for k, v in snapshot.items() if v == "empty"]
+    assert empty_keys == []
+
+
+def test_ground_truth_snapshot_includes_grid_dimensions():
+    world = _make_world()
+    snapshot = _ground_truth_snapshot(world)
+    assert snapshot.get("grid_width") == 8
+    assert snapshot.get("grid_height") == 8
 
 
 def test_ground_truth_snapshot_includes_agent_positions():
@@ -220,6 +235,50 @@ def test_log_event_state_context_has_three_layers():
     assert "shadow_state" in ctx
     assert "ground_truth" in ctx
     assert ctx["agent_beliefs"]["reasoning"] == "looking around"
+
+
+def test_log_event_state_context_has_agent_input():
+    logger = SemanticLogger()
+    world = _make_world()
+
+    logger.log_event(
+        turn_number=0,
+        agent_id="agent_a",
+        llm_response=_look_llm(),
+        shadow_state_before={},
+        tool_result=_success_result(),
+        world=world,
+        message_inbox=["hello"],
+        recent_calls_before=[{"tool_name": "look", "arguments": {}, "turn_number": 0}],
+        last_mistake_before={"tool_name": "move", "turn_number": 0, "reason": "wall"},
+    )
+
+    ctx = logger._events[0]["state_context"]
+    assert "agent_input" in ctx
+    ai = ctx["agent_input"]
+    assert ai["message_inbox"] == ["hello"]
+    assert ai["recent_calls"] == [{"tool_name": "look", "arguments": {}, "turn_number": 0}]
+    assert ai["last_mistake"]["tool_name"] == "move"
+
+
+def test_log_event_agent_input_defaults_to_empty_when_not_provided():
+    logger = SemanticLogger()
+    world = _make_world()
+
+    logger.log_event(
+        turn_number=0,
+        agent_id="agent_a",
+        llm_response=_look_llm(),
+        shadow_state_before={},
+        tool_result=_success_result(),
+        world=world,
+        # no agent_input kwargs
+    )
+
+    ai = logger._events[0]["state_context"]["agent_input"]
+    assert ai["message_inbox"] == []
+    assert ai["recent_calls"] == []
+    assert ai["last_mistake"] is None
 
 
 def test_log_event_execution_result_success():

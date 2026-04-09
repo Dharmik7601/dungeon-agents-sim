@@ -38,8 +38,41 @@ def _fmt_diff(deltas: list[dict]) -> str:
 # Renderers
 # ---------------------------------------------------------------------------
 
+def _fmt_agent_input_compact(event: dict) -> str:
+    """Return a compact one-block string summarising the agent's prompt input."""
+    ctx = event.get("state_context", {})
+    ai = ctx.get("agent_input", {})
+    shadow = ctx.get("shadow_state", {})
+
+    shadow_count = len(shadow)
+    inbox = ai.get("message_inbox") or []
+    mistake = ai.get("last_mistake")
+    calls = ai.get("recent_calls") or []
+
+    lines: list[str] = [f"  Shadow: {shadow_count} cells observed"]
+
+    inbox_str = "; ".join(inbox) if inbox else "(none)"
+    lines.append(f"  Inbox: {inbox_str}")
+
+    if mistake:
+        lines.append(f"  Last mistake: {mistake['tool_name']} on turn {mistake['turn_number']} — {mistake['reason']}")
+    else:
+        lines.append("  Last mistake: (none)")
+
+    if calls:
+        call_parts = []
+        for c in calls:
+            a = ", ".join(f"{k}={v!r}" for k, v in c.get("arguments", {}).items())
+            call_parts.append(f"T{c['turn_number']}: {c['tool_name']}({a})")
+        lines.append(f"  Recent calls: {', '.join(call_parts)}")
+    else:
+        lines.append("  Recent calls: (none)")
+
+    return "\n".join(lines)
+
+
 def render_success(event: dict, console: Console) -> None:
-    """Render a successful turn as a dim entry with reasoning."""
+    """Render a successful turn as a dim entry with reasoning and agent input context."""
     turn = event["turn_number"]
     agent_id = event["agent_id"]
     tool_name = event["action"]["tool_name"]
@@ -49,6 +82,7 @@ def render_success(event: dict, console: Console) -> None:
     console.print(Text(f"[Turn {turn}] {agent_id} \u2713 {tool_name}({args_str})", style="dim"))
     if reasoning:
         console.print(Text(f"  \"{reasoning}\"", style="dim italic"))
+    console.print(Text(_fmt_agent_input_compact(event), style="dim"))
 
 
 def render_incident(event: dict, console: Console) -> None:
@@ -80,6 +114,40 @@ def render_incident(event: dict, console: Console) -> None:
     # Section 3 — Agent Reasoning
     content_lines.append("[bold]Agent Reasoning[/bold]")
     content_lines.append(f"  [italic]{reasoning}[/italic]")
+    content_lines.append("")
+
+    # Section 4 — Agent Input State (what was in the prompt)
+    ctx = event.get("state_context", {})
+    ai = ctx.get("agent_input", {})
+    inbox = ai.get("message_inbox") or []
+    mistake = ai.get("last_mistake")
+    calls = ai.get("recent_calls") or []
+
+    content_lines.append("[bold]Agent Input State[/bold]")
+    inbox_str = "; ".join(inbox) if inbox else "(none)"
+    content_lines.append(f"  Inbox: {inbox_str}")
+    if mistake:
+        content_lines.append(
+            f"  Last mistake: {mistake['tool_name']} on turn {mistake['turn_number']} — {mistake['reason']}"
+        )
+    else:
+        content_lines.append("  Last mistake: (none)")
+    if calls:
+        for c in calls:
+            c_args = ", ".join(f"{k}={v!r}" for k, v in c.get("arguments", {}).items())
+            content_lines.append(f"    T{c['turn_number']}: {c['tool_name']}({c_args})")
+    else:
+        content_lines.append("  Recent calls: (none)")
+    content_lines.append("")
+
+    # Section 5 — Shadow State
+    shadow = ctx.get("shadow_state", {})
+    content_lines.append("[bold]Shadow State[/bold]")
+    if shadow:
+        for key, val in sorted(shadow.items()):
+            content_lines.append(f"  {key}: {val}")
+    else:
+        content_lines.append("  (no cells observed)")
 
     body = "\n".join(content_lines)
     panel = Panel(

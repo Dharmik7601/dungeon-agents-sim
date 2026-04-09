@@ -22,11 +22,19 @@ _CELL_TYPE_NAMES: dict[CellType, str] = {ct: ct.value for ct in CellType}
 # ---------------------------------------------------------------------------
 
 def _ground_truth_snapshot(world: WorldState) -> dict:
-    """Flatten the WorldState into the standardised key format used by the schema."""
-    snapshot: dict = {}
+    """Flatten the WorldState into the standardised key format used by the schema.
+
+    Empty cells are omitted to keep the snapshot sparse — the diagnostic viewer
+    treats any missing cell_status key as "empty" by default.
+    """
+    snapshot: dict = {
+        "grid_width": len(world.grid[0]) if world.grid else 0,
+        "grid_height": len(world.grid),
+    }
     for y, row in enumerate(world.grid):
         for x, cell in enumerate(row):
-            snapshot[f"cell_status_{x}_{y}"] = cell.value
+            if cell != CellType.EMPTY:
+                snapshot[f"cell_status_{x}_{y}"] = cell.value
     for agent_id, pos in world.agent_positions.items():
         snapshot[f"{agent_id}_position"] = list(pos)
     return snapshot
@@ -63,6 +71,9 @@ def _compute_deltas(
     for key in keys_to_check:
         expected_val = expected_state[key]
         actual_val = ground_truth.get(key)
+        # Sparse snapshot omits empty cells; treat missing cell_status keys as "empty"
+        if actual_val is None and key.startswith("cell_status_"):
+            actual_val = CellType.EMPTY.value
 
         # Normalise cell_contents keys: ground truth uses cell_status, not cell_contents
         # For pick_up we compare against whether the key item is still there
@@ -143,6 +154,9 @@ class SemanticLogger:
         shadow_state_before: dict,
         tool_result: ToolResult,
         world: WorldState,
+        message_inbox: list | None = None,
+        recent_calls_before: list | None = None,
+        last_mistake_before: dict | None = None,
     ) -> None:
         agent_pos = world.agent_positions.get(agent_id, (0, 0))
         ground_truth = _ground_truth_snapshot(world)
@@ -180,6 +194,11 @@ class SemanticLogger:
                 },
                 "shadow_state": shadow_serialised,
                 "ground_truth": ground_truth,
+                "agent_input": {
+                    "message_inbox": list(message_inbox) if message_inbox else [],
+                    "recent_calls": list(recent_calls_before) if recent_calls_before else [],
+                    "last_mistake": dict(last_mistake_before) if last_mistake_before else None,
+                },
             },
             "execution_result": {
                 "status": tool_result.status,

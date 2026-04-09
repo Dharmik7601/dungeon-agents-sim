@@ -282,6 +282,36 @@ def test_logger_called_for_each_action():
 # turn_number increments after each full round
 # ---------------------------------------------------------------------------
 
+def test_logger_receives_agent_input_kwargs():
+    """GameLoop must pass message_inbox, recent_calls_before, last_mistake_before to log_event."""
+    world = _make_world()
+    agent_a = _make_agent("agent_a", (0, 0))
+    agent_b = _make_agent("agent_b", (7, 7))
+    # Agent B's outbox will be delivered to A's inbox by _deliver_messages before A acts
+    agent_b.message_outbox = ["msg from B"]
+    agent_a.last_mistake = {"tool_name": "move", "turn_number": 0, "reason": "wall"}
+    agent_a.recent_calls = [{"tool_name": "look", "arguments": {}, "turn_number": 0}]
+
+    llm_a = MagicMock()
+    llm_a.get_decision.return_value = _look_response()
+    llm_b = MagicMock()
+    llm_b.get_decision.return_value = _look_response()
+    logger = MagicMock()
+
+    loop = _make_loop(world=world, agent_a=agent_a, agent_b=agent_b,
+                      llm_a=llm_a, llm_b=llm_b, logger=logger, max_turns=1)
+    loop.run()
+
+    # First log_event call is for agent_a
+    call_kwargs = logger.log_event.call_args_list[0][1]
+    assert "message_inbox" in call_kwargs
+    assert "recent_calls_before" in call_kwargs
+    assert "last_mistake_before" in call_kwargs
+    assert call_kwargs["message_inbox"] == ["msg from B"]
+    assert call_kwargs["last_mistake_before"]["tool_name"] == "move"
+    assert call_kwargs["recent_calls_before"] == [{"tool_name": "look", "arguments": {}, "turn_number": 0}]
+
+
 def test_turn_number_increments_each_round():
     world = _make_world()
     loop = _make_loop(world=world, max_turns=3)
