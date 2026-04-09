@@ -1,5 +1,6 @@
 """Tests for src/loop/game_loop.py."""
 
+import threading
 from unittest.mock import MagicMock, call, patch
 
 import pytest
@@ -57,7 +58,7 @@ def _make_loop(world=None, agent_a=None, agent_b=None, llm_a=None, llm_b=None, l
 
 def test_end_condition_members():
     members = {e.name for e in EndCondition}
-    assert members == {"SUCCESS", "TURN_LIMIT", "ACTION_DEADLOCK", "PARSE_DEADLOCK"}
+    assert members == {"SUCCESS", "TURN_LIMIT", "ACTION_DEADLOCK", "PARSE_DEADLOCK", "INTERRUPTED"}
 
 
 def test_run_result_fields():
@@ -387,3 +388,89 @@ def test_recent_calls_includes_failed_dispatch():
     loop.run()
     assert len(agent_a.recent_calls) == 1
     assert agent_a.recent_calls[0]["tool_name"] == "move"
+
+
+# ---------------------------------------------------------------------------
+# Feature A: Ctrl+E interrupt
+# ---------------------------------------------------------------------------
+
+def test_end_condition_has_interrupted():
+    assert EndCondition.INTERRUPTED is not None
+
+
+def test_gameloop_accepts_stop_event():
+    """GameLoop.__init__ accepts a stop_event kwarg without error."""
+    stop_event = threading.Event()
+    loop = _make_loop(max_turns=1)
+    # Rebuild with stop_event explicitly
+    world = _make_world()
+    agent_a = _make_agent("agent_a", (0, 0))
+    agent_b = _make_agent("agent_b", (7, 7))
+    llm_a = MagicMock()
+    llm_a.get_decision.return_value = _look_response()
+    llm_b = MagicMock()
+    llm_b.get_decision.return_value = _look_response()
+    logger = MagicMock()
+    loop = GameLoop(world, agent_a, agent_b, llm_a, llm_b, logger, max_turns=1, stop_event=stop_event)
+    result = loop.run()
+    assert result.end_condition == EndCondition.TURN_LIMIT
+
+
+def test_stop_event_set_before_run_returns_interrupted():
+    stop_event = threading.Event()
+    stop_event.set()
+    world = _make_world()
+    agent_a = _make_agent("agent_a", (0, 0))
+    agent_b = _make_agent("agent_b", (7, 7))
+    llm_a = MagicMock()
+    llm_b = MagicMock()
+    logger = MagicMock()
+    loop = GameLoop(world, agent_a, agent_b, llm_a, llm_b, logger, max_turns=50, stop_event=stop_event)
+    result = loop.run()
+    assert result.end_condition == EndCondition.INTERRUPTED
+    # LLM should never have been called
+    llm_a.get_decision.assert_not_called()
+
+
+def test_stop_event_set_mid_run_returns_interrupted():
+    """Set the stop_event inside agent A's LLM call; loop should stop after that turn."""
+    stop_event = threading.Event()
+    world = _make_world()
+    agent_a = _make_agent("agent_a", (0, 0))
+    agent_b = _make_agent("agent_b", (7, 7))
+    logger = MagicMock()
+
+    call_count = [0]
+
+    def a_decision(agent, w):
+        call_count[0] += 1
+        stop_event.set()  # signal interrupt during first A turn
+        return _look_response()
+
+    llm_a = MagicMock()
+    llm_a.get_decision.side_effect = a_decision
+    llm_b = MagicMock()
+    llm_b.get_decision.return_value = _look_response()
+
+    loop = GameLoop(world, agent_a, agent_b, llm_a, llm_b, logger, max_turns=50, stop_event=stop_event)
+    result = loop.run()
+
+    assert result.end_condition == EndCondition.INTERRUPTED
+    # B should not have acted in the same round as the interrupt
+    llm_b.get_decision.assert_not_called()
+
+
+def test_interrupted_result_flushes_logger():
+    stop_event = threading.Event()
+    stop_event.set()
+    world = _make_world()
+    agent_a = _make_agent("agent_a", (0, 0))
+    agent_b = _make_agent("agent_b", (7, 7))
+    llm_a = MagicMock()
+    llm_b = MagicMock()
+    logger = MagicMock()
+    logger.flush.return_value = "data/run_wip_test.json"
+    loop = GameLoop(world, agent_a, agent_b, llm_a, llm_b, logger, max_turns=50, stop_event=stop_event)
+    result = loop.run()
+    assert result.end_condition == EndCondition.INTERRUPTED
+    logger.flush.assert_called_once()

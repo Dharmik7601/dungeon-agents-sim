@@ -1,5 +1,6 @@
 """Game loop orchestrator — sequential turn execution with end-condition checking."""
 
+import threading
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any
@@ -14,6 +15,7 @@ class EndCondition(Enum):
     TURN_LIMIT = "turn_limit"
     ACTION_DEADLOCK = "action_deadlock"
     PARSE_DEADLOCK = "parse_deadlock"
+    INTERRUPTED = "interrupted"
 
 
 @dataclass
@@ -33,6 +35,7 @@ class GameLoop:
         llm_b: Any,
         logger: Any,
         max_turns: int = 50,
+        stop_event: threading.Event | None = None,
     ) -> None:
         self._world = world
         self._agent_a = agent_a
@@ -41,6 +44,7 @@ class GameLoop:
         self._llm_b = llm_b
         self._logger = logger
         self._max_turns = max_turns
+        self._stop_event = stop_event
 
     # ------------------------------------------------------------------
     # Public API
@@ -51,6 +55,9 @@ class GameLoop:
             return RunResult(EndCondition.SUCCESS, self._world.turn_number, None)
 
         while self._world.turn_number < self._max_turns:
+            if self._stop_event is not None and self._stop_event.is_set():
+                return RunResult(EndCondition.INTERRUPTED, self._world.turn_number, self._flush_logger())
+
             # Deliver messages from the previous round to each agent
             self._deliver_messages(self._agent_a, self._agent_b)
             self._deliver_messages(self._agent_b, self._agent_a)
@@ -61,6 +68,9 @@ class GameLoop:
                 return RunResult(end, self._world.turn_number, self._flush_logger())
             if self._check_success():
                 return RunResult(EndCondition.SUCCESS, self._world.turn_number, self._flush_logger())
+
+            if self._stop_event is not None and self._stop_event.is_set():
+                return RunResult(EndCondition.INTERRUPTED, self._world.turn_number, self._flush_logger())
 
             # Agent B acts
             end = self._run_agent_turn(self._agent_b, self._llm_b, self._agent_a)

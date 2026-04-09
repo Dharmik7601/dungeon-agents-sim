@@ -43,5 +43,5 @@
 - [ ] Integration tests for prompt-context
 
 ## interrupt
-- [ ] Feature A: add `EndCondition.INTERRUPTED`; `GameLoop` accepts `stop_event`; `run_simulation.py` spawns `msvcrt`-based daemon thread for Ctrl+E
+- [x] Feature A: add `EndCondition.INTERRUPTED`; `GameLoop` accepts `stop_event`; `run_simulation.py` spawns `msvcrt`-based daemon thread for Ctrl+E
 - [ ] Integration tests for interrupt

@@ -2,6 +2,7 @@
 
 import os
 import sys
+import threading
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -76,6 +77,32 @@ class _CompositeLogger:
         return self._semantic.flush(run_id=self._run_id)
 
 
+def _start_interrupt_listener(stop_event: threading.Event) -> None:
+    """Spawn a daemon thread that sets stop_event when Ctrl+E (0x05) is pressed.
+
+    Uses msvcrt on Windows. Silently skips if the platform doesn't support it
+    or if stdin is not a TTY (e.g., piped input in CI).
+    """
+    try:
+        import msvcrt
+
+        if not sys.stdin.isatty():
+            return
+
+        def _listen() -> None:
+            while not stop_event.is_set():
+                if msvcrt.kbhit():
+                    ch = msvcrt.getch()
+                    if ch == b"\x05":  # Ctrl+E
+                        stop_event.set()
+                        return
+
+        t = threading.Thread(target=_listen, daemon=True)
+        t.start()
+    except (ImportError, AttributeError):
+        pass  # Non-Windows or non-TTY — interrupt not available
+
+
 def _fmt_args(args: dict) -> str:
     if not args:
         return ""
@@ -96,7 +123,7 @@ def run(run_id: str = "01") -> None:
     console.print(render_board_live(world))
     console.print(board_legend())
     console.print(Rule(style="dim"))
-    console.print(f"[Run {run_id}] Starting simulation (max 50 turns) …")
+    console.print(f"[Run {run_id}] Starting simulation (max 50 turns) … [dim](Ctrl+E to stop)[/dim]")
 
     llm_a_client = LLMClient(model_name=_MODEL_NAME, prompt_path=str(_PROMPT_PATH))
     llm_b_client = LLMClient(model_name=_MODEL_NAME, prompt_path=str(_PROMPT_PATH))
@@ -111,7 +138,10 @@ def run(run_id: str = "01") -> None:
     llm_a = SimpleNamespace(get_decision=wrap_with_langfuse(llm_a_client, run_id, 0, "agent_a"))
     llm_b = SimpleNamespace(get_decision=wrap_with_langfuse(llm_b_client, run_id, 0, "agent_b"))
 
-    loop = GameLoop(world, agent_a, agent_b, llm_a, llm_b, logger)
+    stop_event = threading.Event()
+    _start_interrupt_listener(stop_event)
+
+    loop = GameLoop(world, agent_a, agent_b, llm_a, llm_b, logger, stop_event=stop_event)
     result = loop.run()
 
     # Flush Langfuse before exit so no traces are dropped.
