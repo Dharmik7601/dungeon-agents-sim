@@ -34,4 +34,4 @@
 - [x] Integration tests for cli-viewer
 
 ## end-to-end
-- [ ] End-to-end smoke test: run a full simulation, assert `run_*.json` is produced with valid schema, assert CLI viewer exits cleanly on that file
+- [x] End-to-end smoke test: run a full simulation, assert `run_*.json` is produced with valid schema, assert CLI viewer exits cleanly on that file
