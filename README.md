@@ -117,7 +117,6 @@ Board is redrawn before each event from the `ground_truth` snapshot.
 | Variable | Required | Description |
 |---|---|---|
 | `GOOGLE_API_KEY` | Yes | Google Generative AI API key |
-| `GEMINI_MODEL` | No | Override model name (default: `gemma-4-31b-it`) |
 | `LANGFUSE_PUBLIC_KEY` | No | Langfuse public key — disabled if absent |
 | `LANGFUSE_SECRET_KEY` | No | Langfuse secret key |
 | `LANGFUSE_HOST` | No | Langfuse host URL (default: `cloud.langfuse.com`) |
