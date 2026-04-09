@@ -36,3 +36,5 @@ class AgentState:
     consecutive_parse_failures: int = 0
     last_known_position: tuple[int, int] | None = None
     last_known_position_turn: int | None = None
+    last_mistake: dict | None = None
+    recent_calls: list = field(default_factory=list)

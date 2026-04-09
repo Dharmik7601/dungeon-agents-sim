@@ -286,3 +286,104 @@ def test_turn_number_increments_each_round():
     loop = _make_loop(world=world, max_turns=3)
     loop.run()
     assert world.turn_number == 3
+
+
+# ---------------------------------------------------------------------------
+# Feature C: last_mistake
+# ---------------------------------------------------------------------------
+
+def test_agentstate_has_last_mistake_field():
+    a = AgentState(agent_id="agent_a", position=(0, 0))
+    assert a.last_mistake is None
+
+
+def test_tool_failure_sets_last_mistake():
+    world = _make_world()
+    agent_a = _make_agent("agent_a", (0, 0))
+    # Move north out of bounds — will fail
+    fail_response = LLMResponse(
+        reasoning="r", expected_state={}, tool_name="move", arguments={"direction": "north"}
+    )
+    llm_a = MagicMock()
+    llm_a.get_decision.return_value = fail_response
+    loop = _make_loop(world=world, agent_a=agent_a, llm_a=llm_a, max_turns=1)
+    loop.run()
+    assert agent_a.last_mistake is not None
+    assert agent_a.last_mistake["tool_name"] == "move"
+    assert agent_a.last_mistake["turn_number"] == 0
+    assert "north" in agent_a.last_mistake["reason"].lower() or "bound" in agent_a.last_mistake["reason"].lower()
+
+
+def test_parse_error_sets_last_mistake():
+    world = _make_world()
+    agent_a = _make_agent("agent_a", (0, 0))
+
+    def raise_parse_error(agent, world):
+        agent.consecutive_parse_failures += 1
+        raise ParseError("bad json")
+
+    llm_a = MagicMock()
+    llm_a.get_decision.side_effect = raise_parse_error
+    loop = _make_loop(world=world, agent_a=agent_a, llm_a=llm_a, max_turns=1)
+    loop.run()
+    assert agent_a.last_mistake is not None
+    assert agent_a.last_mistake["tool_name"] == "(parse_error)"
+    assert agent_a.last_mistake["turn_number"] == 0
+
+
+def test_success_does_not_overwrite_last_mistake():
+    world = _make_world()
+    agent_a = _make_agent("agent_a", (0, 0))
+    agent_a.last_mistake = {"tool_name": "move", "turn_number": 0, "reason": "wall"}
+    # look always succeeds
+    llm_a = MagicMock()
+    llm_a.get_decision.return_value = _look_response()
+    loop = _make_loop(world=world, agent_a=agent_a, llm_a=llm_a, max_turns=1)
+    loop.run()
+    assert agent_a.last_mistake["tool_name"] == "move"
+
+
+# ---------------------------------------------------------------------------
+# Feature D: recent_calls
+# ---------------------------------------------------------------------------
+
+def test_agentstate_has_recent_calls_field():
+    a = AgentState(agent_id="agent_a", position=(0, 0))
+    assert a.recent_calls == []
+
+
+def test_recent_calls_appended_after_dispatch():
+    world = _make_world()
+    agent_a = _make_agent("agent_a", (0, 0))
+    llm_a = MagicMock()
+    llm_a.get_decision.return_value = _look_response()
+    loop = _make_loop(world=world, agent_a=agent_a, llm_a=llm_a, max_turns=1)
+    loop.run()
+    assert len(agent_a.recent_calls) == 1
+    assert agent_a.recent_calls[0]["tool_name"] == "look"
+    assert agent_a.recent_calls[0]["turn_number"] == 0
+
+
+def test_recent_calls_limited_to_five():
+    world = _make_world()
+    agent_a = _make_agent("agent_a", (0, 0))
+    llm_a = MagicMock()
+    llm_a.get_decision.return_value = _look_response()
+    # Run 6 turns so agent_a acts 6 times
+    loop = _make_loop(world=world, agent_a=agent_a, llm_a=llm_a, max_turns=6)
+    loop.run()
+    assert len(agent_a.recent_calls) == 5
+
+
+def test_recent_calls_includes_failed_dispatch():
+    world = _make_world()
+    agent_a = _make_agent("agent_a", (0, 0))
+    fail_response = LLMResponse(
+        reasoning="r", expected_state={}, tool_name="move", arguments={"direction": "north"}
+    )
+    llm_a = MagicMock()
+    llm_a.get_decision.return_value = fail_response
+    loop = _make_loop(world=world, agent_a=agent_a, llm_a=llm_a, max_turns=1)
+    loop.run()
+    assert len(agent_a.recent_calls) == 1
+    assert agent_a.recent_calls[0]["tool_name"] == "move"

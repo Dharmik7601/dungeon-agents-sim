@@ -484,3 +484,86 @@ def test_build_prompt_injects_unknown_when_location_never_set(tmp_path):
     prompt = llm._build_prompt(agent, ws)
     assert "(unknown)" in prompt
     assert "{{LAST_KNOWN_LOCATION}}" not in prompt
+
+
+# ---------------------------------------------------------------------------
+# Feature C & D: last_mistake and recent_calls prompt injection
+# ---------------------------------------------------------------------------
+
+def _make_full_prompt_file(tmp_path) -> str:
+    content = (
+        "<system_prompt>\n"
+        "Agent: {{AGENT_ID}} Turn: {{TURN_NUMBER}}\n"
+        "Map: {{SHADOW_MAP}}\n"
+        "Inventory: {{INVENTORY}}\n"
+        "Location: {{LAST_KNOWN_LOCATION}}\n"
+        "Mistake: {{LAST_MISTAKE}}\n"
+        "Recent: {{RECENT_CALLS}}\n"
+        "Messages: {{MESSAGES}}\n"
+        "</system_prompt>"
+    )
+    p = tmp_path / "agent_system.md"
+    p.write_text(content)
+    return str(p)
+
+
+def test_build_prompt_injects_last_mistake_when_set(tmp_path):
+    ws = _make_world()
+    ws.turn_number = 3
+    agent = _make_agent("agent_a", (0, 0))
+    agent.last_mistake = {"tool_name": "move", "turn_number": 2, "reason": "wall"}
+
+    with patch("src.agents.llm_client.genai"):
+        llm = LLMClient(model_name="gemma-4-31b-it", prompt_path=_make_full_prompt_file(tmp_path))
+
+    prompt = llm._build_prompt(agent, ws)
+    assert "move" in prompt
+    assert "turn 2" in prompt
+    assert "wall" in prompt
+    assert "{{LAST_MISTAKE}}" not in prompt
+
+
+def test_build_prompt_injects_no_mistake_string_when_none(tmp_path):
+    ws = _make_world()
+    agent = _make_agent("agent_a", (0, 0))
+    # last_mistake is None by default
+
+    with patch("src.agents.llm_client.genai"):
+        llm = LLMClient(model_name="gemma-4-31b-it", prompt_path=_make_full_prompt_file(tmp_path))
+
+    prompt = llm._build_prompt(agent, ws)
+    assert "(none)" in prompt
+    assert "{{LAST_MISTAKE}}" not in prompt
+
+
+def test_build_prompt_injects_recent_calls_when_set(tmp_path):
+    ws = _make_world()
+    ws.turn_number = 5
+    agent = _make_agent("agent_a", (0, 0))
+    agent.recent_calls = [
+        {"tool_name": "look", "arguments": {}, "turn_number": 3},
+        {"tool_name": "move", "arguments": {"direction": "east"}, "turn_number": 4},
+    ]
+
+    with patch("src.agents.llm_client.genai"):
+        llm = LLMClient(model_name="gemma-4-31b-it", prompt_path=_make_full_prompt_file(tmp_path))
+
+    prompt = llm._build_prompt(agent, ws)
+    assert "look" in prompt
+    assert "move" in prompt
+    assert "turn 3" in prompt
+    assert "turn 4" in prompt
+    assert "{{RECENT_CALLS}}" not in prompt
+
+
+def test_build_prompt_injects_no_calls_string_when_empty(tmp_path):
+    ws = _make_world()
+    agent = _make_agent("agent_a", (0, 0))
+    # recent_calls is [] by default
+
+    with patch("src.agents.llm_client.genai"):
+        llm = LLMClient(model_name="gemma-4-31b-it", prompt_path=_make_full_prompt_file(tmp_path))
+
+    prompt = llm._build_prompt(agent, ws)
+    assert "(none)" in prompt
+    assert "{{RECENT_CALLS}}" not in prompt

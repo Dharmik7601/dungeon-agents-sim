@@ -38,8 +38,8 @@
 
 ## prompt-context
 - [x] Feature B: add `last_known_position` + `last_known_position_turn` to `AgentState`; update `_check_coordinates` to set them; inject `{{LAST_KNOWN_LOCATION}}` via `LLMClient` and prompt template
-- [ ] Feature C: add `last_mistake` to `AgentState`; record on tool failure and `ParseError` in `GameLoop`; inject `{{LAST_MISTAKE}}` into prompt
-- [ ] Feature D: add `recent_calls` (max 5) to `AgentState`; append after every dispatch in `GameLoop`; inject `{{RECENT_CALLS}}` into prompt
+- [x] Feature C: add `last_mistake` to `AgentState`; record on tool failure and `ParseError` in `GameLoop`; inject `{{LAST_MISTAKE}}` into prompt
+- [x] Feature D: add `recent_calls` (max 5) to `AgentState`; append after every dispatch in `GameLoop`; inject `{{RECENT_CALLS}}` into prompt
 - [ ] Integration tests for prompt-context
 
 ## interrupt

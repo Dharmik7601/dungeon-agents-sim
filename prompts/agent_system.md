@@ -20,6 +20,12 @@ You and your partner agent must both reach the locked exit door. One of you must
 **Last confirmed location (via check_coordinates):**
 {{LAST_KNOWN_LOCATION}}
 
+**Most recent mistake:**
+{{LAST_MISTAKE}}
+
+**5 most recent actions (tool, turn):**
+{{RECENT_CALLS}}
+
 **Messages received this turn:**
 {{MESSAGES}}
 

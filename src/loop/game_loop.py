@@ -86,7 +86,12 @@ class GameLoop:
         # Get LLM decision
         try:
             response: LLMResponse = llm.get_decision(agent, self._world)
-        except ParseError:
+        except ParseError as exc:
+            agent.last_mistake = {
+                "tool_name": "(parse_error)",
+                "turn_number": self._world.turn_number,
+                "reason": str(exc),
+            }
             if agent.consecutive_parse_failures >= 3:
                 return EndCondition.PARSE_DEADLOCK
             return None
@@ -98,6 +103,23 @@ class GameLoop:
         result = ToolDispatcher.dispatch(
             response.tool_name, response.arguments, agent, self._world
         )
+
+        # Track recent calls (max 5 sliding window)
+        agent.recent_calls.append({
+            "tool_name": response.tool_name,
+            "arguments": response.arguments,
+            "turn_number": self._world.turn_number,
+        })
+        if len(agent.recent_calls) > 5:
+            agent.recent_calls.pop(0)
+
+        # Record mistake on failure
+        if result.status == "failure":
+            agent.last_mistake = {
+                "tool_name": response.tool_name,
+                "turn_number": self._world.turn_number,
+                "reason": result.message,
+            }
 
         # Log event
         self._logger.log_event(

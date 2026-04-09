@@ -36,6 +36,21 @@ class LLMClient:
         else:
             location_str = "(unknown)"
 
+        if agent.last_mistake is not None:
+            m = agent.last_mistake
+            mistake_str = f"{m['tool_name']} on turn {m['turn_number']}: {m['reason']}"
+        else:
+            mistake_str = "(none)"
+
+        if agent.recent_calls:
+            calls_lines = [
+                f"  turn {c['turn_number']}: {c['tool_name']}({', '.join(f'{k}={v!r}' for k, v in c['arguments'].items())})"
+                for c in agent.recent_calls
+            ]
+            recent_calls_str = "\n".join(calls_lines)
+        else:
+            recent_calls_str = "(none)"
+
         return (
             self._prompt_template
             .replace("{{AGENT_ID}}", agent.agent_id)
@@ -43,6 +58,8 @@ class LLMClient:
             .replace("{{SHADOW_MAP}}", shadow_map_str)
             .replace("{{INVENTORY}}", inventory_str)
             .replace("{{LAST_KNOWN_LOCATION}}", location_str)
+            .replace("{{LAST_MISTAKE}}", mistake_str)
+            .replace("{{RECENT_CALLS}}", recent_calls_str)
             .replace("{{MESSAGES}}", messages_str)
         )
 
