@@ -19,9 +19,9 @@
 - [x] Integration tests for agents
 
 ## game-loop
-- [ ] Implement `GameLoop` orchestrator: turn sequencing, message delivery, end-condition checking (`src/loop/game_loop.py`)
-- [ ] Implement `run_simulation.py` entry point with terminal status printing (`src/loop/run_simulation.py`)
-- [ ] Integration tests for game-loop
+- [x] Implement `GameLoop` orchestrator: turn sequencing, message delivery, end-condition checking (`src/loop/game_loop.py`)
+- [x] Implement `run_simulation.py` entry point with terminal status printing (`src/loop/run_simulation.py`)
+- [x] Integration tests for game-loop
 
 ## tracing
 - [ ] Implement `SemanticLogger`: event accumulation, delta computation (Scenario Mapping Matrix), JSON flush to `data/` (`src/tracing/semantic_logger.py`)
