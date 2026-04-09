@@ -7,10 +7,10 @@
 - [x] Integration tests for project-setup
 
 ## world
-- [ ] Implement `CellType` enum and `WorldState` dataclass (`src/world/state.py`)
-- [ ] Implement procedural map generation with obstacle density cap (`src/world/generator.py`)
-- [ ] Implement BFS validation and `generate_valid_world()` entry point (`src/world/generator.py`)
-- [ ] Integration tests for world
+- [x] Implement `CellType` enum and `WorldState` dataclass (`src/world/state.py`)
+- [x] Implement procedural map generation with obstacle density cap (`src/world/generator.py`)
+- [x] Implement BFS validation and `generate_valid_world()` entry point (`src/world/generator.py`)
+- [x] Integration tests for world
 
 ## agents
 - [ ] Implement `AgentState` dataclass with shadow map, inventory, message queues, and deadlock counters (`src/agents/state.py`)
