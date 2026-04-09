@@ -164,8 +164,14 @@ class TestRenderSuccess:
         render_success(_success_event(), console)
         assert "move" in buf.getvalue()
 
+    def test_renders_reasoning(self):
+        from src.cli.diagnostic_viewer import render_success
+        console, buf = _make_console()
+        render_success(_success_event(), console)
+        assert "Moving north to explore." in buf.getvalue()
+
     def test_does_not_print_panel(self):
-        """Success renders as a plain dim line, not a Panel."""
+        """Success renders as dim text + reasoning, not a Panel."""
         from src.cli.diagnostic_viewer import render_success
         from unittest.mock import MagicMock
         from rich.panel import Panel

@@ -7,7 +7,10 @@ from pathlib import Path
 
 from rich.console import Console
 from rich.panel import Panel
+from rich.rule import Rule
 from rich.text import Text
+
+from src.cli.board_renderer import board_legend, render_board_from_snapshot
 
 
 # ---------------------------------------------------------------------------
@@ -36,14 +39,16 @@ def _fmt_diff(deltas: list[dict]) -> str:
 # ---------------------------------------------------------------------------
 
 def render_success(event: dict, console: Console) -> None:
-    """Render a successful turn as a dim single-line entry."""
+    """Render a successful turn as a dim entry with reasoning."""
     turn = event["turn_number"]
     agent_id = event["agent_id"]
     tool_name = event["action"]["tool_name"]
     args = event["action"].get("arguments", {})
     args_str = ", ".join(f"{k}={v!r}" for k, v in args.items()) if args else ""
-    line = Text(f"[Turn {turn}] {agent_id} \u2713 {tool_name}({args_str})", style="dim")
-    console.print(line)
+    reasoning = event["state_context"]["agent_beliefs"].get("reasoning", "")
+    console.print(Text(f"[Turn {turn}] {agent_id} \u2713 {tool_name}({args_str})", style="dim"))
+    if reasoning:
+        console.print(Text(f"  \"{reasoning}\"", style="dim italic"))
 
 
 def render_incident(event: dict, console: Console) -> None:
@@ -102,6 +107,14 @@ def render_log(
         status = event["execution_result"]["status"]
         if filter_mode == "failures_only" and status != "failure":
             continue
+
+        # Board state at this moment in the replay
+        ground_truth = event.get("state_context", {}).get("ground_truth", {})
+        if ground_truth:
+            console.print(render_board_from_snapshot(ground_truth))
+            console.print(board_legend())
+            console.print(Rule(style="dim"))
+
         if status == "failure":
             render_incident(event, console)
         else:

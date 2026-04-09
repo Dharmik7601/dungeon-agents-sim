@@ -4,7 +4,7 @@ A multi-agent LLM simulation on a procedurally generated 8×8 grid dungeon. The 
 
 ## How to Use
 
-- Install dependencies: `pip install -e ".[dev]"`
+- Install dependencies: `pip install -r requirements-dev.txt`
 - Configure environment: copy `.env.example` to `.env` and fill in values
 - Run a simulation: `python -m src.loop.run_simulation`
 - View a diagnostic replay: `python -m src.cli.diagnostic_viewer --log-file data/run_<timestamp>.json`
@@ -24,10 +24,10 @@ dungeon-agents-sim/
 │   ├── world/           # WorldState, CellType, procedural generation, BFS validation
 │   ├── agents/          # AgentState, ToolDispatcher, LLMClient
 │   ├── loop/            # GameLoop orchestrator, end-condition checker
-│   ├── tracing/         # SemanticLogger, Langfuse @observe wrapper
-│   └── cli/             # diagnostic_viewer.py (rich + argparse)
+│   ├── tracing/         # SemanticLogger (crash-safe), Langfuse @observe wrapper
+│   └── cli/             # diagnostic_viewer.py, board_renderer.py (rich + argparse)
 ├── prompts/             # agent_system.md — XML system prompt with placeholders
-├── data/                # output run_*.json semantic logs (gitignored)
+├── data/                # semantic logs — run_*.json (clean exit) or run_wip_*.json (crash)
 └── tests/               # pytest test suite
 ```
 
@@ -41,16 +41,18 @@ dungeon-agents-sim/
 
 ## Environment Variables
 
-- `GOOGLE_API_KEY` — Google Generative AI API key (Gemma 4)
-- `LANGFUSE_PUBLIC_KEY` — Langfuse project public key
-- `LANGFUSE_SECRET_KEY` — Langfuse project secret key
-- `LANGFUSE_HOST` — Langfuse host URL (defaults to cloud if unset)
+- `GOOGLE_API_KEY` — Google Generative AI API key (required; used by Gemma model)
+- `GEMINI_MODEL` — override the Gemma model name (default: `gemma-4-31b-it`)
+- `LANGFUSE_PUBLIC_KEY` — Langfuse project public key (optional; leave blank to disable)
+- `LANGFUSE_SECRET_KEY` — Langfuse project secret key (optional)
+- `LANGFUSE_HOST` — Langfuse host URL (optional; defaults to cloud.langfuse.com)
 
 ## Conventions
 
 - Three-layer state separation is a hard invariant: Ground Truth, Shadow State, Agent Beliefs are never mixed. See `docs/DESIGN.md`.
 - Prompt files live in `prompts/` and use XML tags (`<system_prompt>`) with `{{PLACEHOLDER}}` string replacement. Never hardcode prompts in Python.
-- LLM calls are always wrapped with the Langfuse `@observe` decorator in `src/tracing/`.
-- All semantic trace events are appended to a `SemanticLogger` instance and flushed to `data/` on run completion.
+- LLM calls are wrapped with the Langfuse v4 API in `src/tracing/langfuse_wrapper.py` using nested `start_as_current_observation()` context managers (trace span → generation span); falls back to a no-op when env vars are absent.
+- Semantic trace events are written to a crash-safe WIP file (`data/run_wip_*.json`) after every action. On clean exit the WIP is renamed to `data/run_{id}_{timestamp}.json` and deleted. A crash leaves the WIP file intact and readable by the diagnostic viewer.
 - No hardcoded credentials or environment-specific values anywhere in source.
 - Tests are written before implementation (TDD). Every module in `src/` has a corresponding `tests/test_<module>.py`.
+- Run with `python -m src.loop.run_simulation` (not `python src/loop/run_simulation.py`) — the `-m` flag adds the project root to `sys.path` so `src.*` imports resolve correctly.

@@ -24,20 +24,35 @@ Shadow state is updated **only** as a side-effect of the agent calling specific 
 
 Sequential, custom vanilla Python. No LangGraph or LangChain. Turn order: Agent A → Agent B → advance counter → check end conditions.
 
-Message delivery is delayed by one turn (outbox → inbox on next turn), creating communication-based desync.
+Message delivery is delayed by one turn (outbox → inbox on next turn), creating communication-based desync. Messages survive only one round in the recipient's inbox — they are overwritten at the start of the next round whether or not the recipient acted on them.
 
 ### Prompt System
 
 - External XML prompt files: `prompts/agent_system.md`
 - Format: `<system_prompt>...</system_prompt>` with string-replacement placeholders
 - Placeholders: `{{AGENT_ID}}`, `{{TURN_NUMBER}}`, `{{SHADOW_MAP}}`, `{{INVENTORY}}`, `{{MESSAGES}}`
+- `SHADOW_MAP` is cumulative — all cells ever observed are included, not just the most recent
 - LLM responds strictly in JSON: `{ "reasoning", "expected_state", "tool_name", "arguments" }`
+
+### LLM Model
+
+Both agents use `gemma-4-31b-it` via the `google-genai` SDK. The model name is read from the `GEMINI_MODEL` environment variable and defaults to `gemma-4-31b-it` if unset.
 
 ### Observability Output
 
 Two artifacts produced per run:
-1. **Langfuse infra traces** — latency, tokens, raw I/O via `@observe` decorator
-2. **Semantic JSON log** (`data/run_{timestamp}.json`) — full three-layer state + deltas per event
+
+1. **Langfuse infra traces** — latency, tokens, raw I/O via the Langfuse v4 API. Each call creates a parent trace span (`start_as_current_observation(as_type="span")`) with a nested generation span (`as_type="generation"`) carrying the prompt input, output, and model name. Tagged with `run_id`, `turn_number`, and `agent_id`. `lf.flush()` is called after every generation for real-time dashboard visibility. Falls back to a transparent no-op when `LANGFUSE_PUBLIC_KEY` / `LANGFUSE_SECRET_KEY` are absent.
+
+2. **Semantic JSON log** — full three-layer state + deltas per event, stored in `data/`.
+   - **During a run:** written incrementally to `data/run_wip_<uuid8>.json` after every agent action. This file survives a crash and can be opened directly with the diagnostic viewer.
+   - **On clean exit:** events are written to `data/run_{run_id}_{timestamp}.json` and the WIP file is deleted.
+
+### Terminal Display
+
+The live simulation renders a `rich`-based board after every agent action (screen clears and redraws in place). The diagnostic viewer renders the board state captured in each event's `ground_truth` snapshot before displaying the event's success line or incident panel.
+
+Board symbols: `A` agent_a · `B` agent_b · `✦` both at same cell · `K` key · `X` exit (locked) · `O` exit (open) · `█` wall · `·` empty
 
 ---
 
@@ -48,11 +63,11 @@ dungeon-agents-sim/
 ├── src/
 │   ├── world/          # WorldState, CellType, procedural generation, BFS validation
 │   ├── agents/         # AgentState, ToolDispatcher, LLMClient
-│   ├── loop/           # GameLoop orchestrator, end-condition checker
-│   ├── tracing/        # SemanticLogger, Langfuse wrapper
-│   └── cli/            # diagnostic_viewer.py
+│   ├── loop/           # GameLoop orchestrator, end-condition checker, run_simulation entry point
+│   ├── tracing/        # SemanticLogger (crash-safe WIP writes), Langfuse wrapper
+│   └── cli/            # diagnostic_viewer.py, board_renderer.py
 ├── prompts/            # agent_system.md (XML system prompt)
-├── data/               # output run_*.json files (gitignored)
+├── data/               # run_*.json (clean) or run_wip_*.json (crash recovery)
 ├── tests/              # pytest test suite
 └── docs/
     ├── DESIGN.md        # this file
@@ -71,10 +86,13 @@ Chosen to maintain absolute programmatic control over turn order, message queues
 Keeps prompt rendering auditable and dependency-free. The prompt file is human-readable in source control and the injection point is explicit.
 
 ### Langfuse for infra traces
-Native LLM observability SDK with built-in UI, token tracking, and clean export. Configured entirely via environment variables.
+Native LLM observability SDK with built-in UI, token tracking, and clean export. Configured entirely via environment variables; silently disabled when keys are absent.
 
 ### Custom JSON semantic log (not OpenTelemetry spans)
 The three-layer state schema (`agent_beliefs`, `shadow_state`, `ground_truth`) is domain-specific and does not map cleanly to generic span attributes. A custom schema allows exact alignment with the CLI viewer's rendering logic.
+
+### Crash-safe WIP writes (append-on-every-event)
+`SemanticLogger` writes the full event list to `run_wip_*.json` after every `log_event` call. On clean exit the WIP is replaced by the final named file. This ensures no events are lost to a crash, at the cost of one file-write per agent action (acceptable for ≤100 events per run).
 
 ---
 
@@ -86,12 +104,14 @@ The three-layer state schema (`agent_beliefs`, `shadow_state`, `ground_truth`) i
 | String templating | Jinja2 | Extra dependency for a one-file concern; adds indirection over a trivial operation |
 | Langfuse | OpenTelemetry | OTel requires more boilerplate for LLM-specific fields; Langfuse is purpose-built |
 | Custom JSON log | Langfuse custom events | Langfuse events lack the structured three-layer state diff the CLI viewer depends on |
+| WIP file (full rewrite per event) | JSONL append | Full rewrite keeps the file always valid JSON (readable mid-run); JSONL would require a converter before the viewer can read it |
 
 ---
 
 ## Environment Variables
 
-- `GOOGLE_API_KEY` — Google Generative AI API key (Gemma 4)
-- `LANGFUSE_PUBLIC_KEY` — Langfuse project public key
-- `LANGFUSE_SECRET_KEY` — Langfuse project secret key
-- `LANGFUSE_HOST` — Langfuse host URL (defaults to cloud if unset)
+- `GOOGLE_API_KEY` — Google Generative AI API key (required)
+- `GEMINI_MODEL` — override model name (default: `gemma-4-31b-it`)
+- `LANGFUSE_PUBLIC_KEY` — Langfuse public key (optional)
+- `LANGFUSE_SECRET_KEY` — Langfuse secret key (optional)
+- `LANGFUSE_HOST` — Langfuse host URL (optional; defaults to cloud)

@@ -318,6 +318,64 @@ def test_flush_event_id_is_unique():
 
 
 # ---------------------------------------------------------------------------
+# SemanticLogger — crash survival (WIP file)
+# ---------------------------------------------------------------------------
+
+def test_wip_file_written_after_each_log_event(tmp_path):
+    """Events are flushed to a WIP file after every log_event call."""
+    logger = SemanticLogger(data_dir=str(tmp_path))
+    world = _make_world()
+
+    logger.log_event(
+        turn_number=0, agent_id="agent_a",
+        llm_response=_look_llm(), shadow_state_before={},
+        tool_result=_success_result(), world=world,
+    )
+
+    wip_files = list(tmp_path.glob("run_wip_*.json"))
+    assert len(wip_files) == 1
+    events = json.loads(wip_files[0].read_text())
+    assert len(events) == 1
+
+
+def test_wip_file_contains_all_events_before_flush(tmp_path):
+    """WIP file grows with each event — simulates what a crash would capture."""
+    logger = SemanticLogger(data_dir=str(tmp_path))
+    world = _make_world()
+
+    for _ in range(3):
+        logger.log_event(
+            turn_number=0, agent_id="agent_a",
+            llm_response=_look_llm(), shadow_state_before={},
+            tool_result=_success_result(), world=world,
+        )
+
+    # Do NOT call flush — simulate crash
+    wip_files = list(tmp_path.glob("run_wip_*.json"))
+    assert len(wip_files) == 1
+    events = json.loads(wip_files[0].read_text())
+    assert len(events) == 3
+
+
+def test_wip_file_deleted_after_flush(tmp_path):
+    """flush() removes the WIP file once the final file is written."""
+    logger = SemanticLogger(data_dir=str(tmp_path))
+    world = _make_world()
+
+    logger.log_event(
+        turn_number=0, agent_id="agent_a",
+        llm_response=_look_llm(), shadow_state_before={},
+        tool_result=_success_result(), world=world,
+    )
+    assert len(list(tmp_path.glob("run_wip_*.json"))) == 1
+
+    logger.flush(run_id="clean_exit")
+
+    assert len(list(tmp_path.glob("run_wip_*.json"))) == 0
+    assert len(list(tmp_path.glob("run_clean_exit_*.json"))) == 1
+
+
+# ---------------------------------------------------------------------------
 # SemanticLogger + delta integration
 # ---------------------------------------------------------------------------
 
@@ -346,6 +404,60 @@ def test_stale_shadow_state_appears_in_event_deltas():
 # ---------------------------------------------------------------------------
 # Langfuse wrapper — graceful fallback
 # ---------------------------------------------------------------------------
+
+def test_wrap_with_langfuse_calls_trace_and_generation(monkeypatch):
+    """When Langfuse is configured, wrap_with_langfuse must call
+    start_as_current_observation twice (trace span + generation) and flush —
+    exercises the v4 API path so AttributeError on wrong method names is caught
+    before a live run."""
+    from unittest.mock import MagicMock, patch
+    from src.tracing.langfuse_wrapper import wrap_with_langfuse
+    import src.tracing.langfuse_wrapper as lfw
+
+    # Simulate configured env
+    monkeypatch.setenv("LANGFUSE_PUBLIC_KEY", "pk-test")
+    monkeypatch.setenv("LANGFUSE_SECRET_KEY", "sk-test")
+
+    # Build mock Langfuse client for the v4 context-manager API.
+    # MagicMock supports __enter__/__exit__ automatically.
+    mock_lf = MagicMock()
+
+    # Langfuse is imported inside _get_client(); patch it at the source module.
+    lfw._client = None
+    with patch("langfuse.Langfuse", return_value=mock_lf):
+        traced = wrap_with_langfuse(
+            MagicMock(**{"get_decision.return_value": LLMResponse(
+                reasoning="r", expected_state={}, tool_name="look", arguments={}
+            ), "_build_prompt.return_value": "prompt", "_model_name": "test-model"}),
+            run_id="r1", turn_number=0, agent_id="agent_a",
+        )
+        result = traced(_make_agent(), _make_world())
+
+    # Must have called start_as_current_observation twice: once for the trace
+    # span and once for the generation nested inside it.
+    assert mock_lf.start_as_current_observation.call_count == 2
+    calls = mock_lf.start_as_current_observation.call_args_list
+    assert calls[0].kwargs["name"] == "agent_turn_execution"
+    assert calls[0].kwargs["as_type"] == "span"
+    assert calls[1].kwargs["name"] == "get_decision"
+    assert calls[1].kwargs["as_type"] == "generation"
+
+    # The generation span (context manager entry) must have had .update() called
+    # with the LLM output.
+    gen_span = mock_lf.start_as_current_observation.return_value.__enter__.return_value
+    gen_span.update.assert_called_once()
+
+    mock_lf.flush.assert_called()
+
+    # Clean up singleton so other tests are unaffected
+    lfw._client = None
+
+
+def test_flush_langfuse_is_noop_when_not_configured():
+    """flush_langfuse() must not raise when Langfuse env vars are absent."""
+    from src.tracing.langfuse_wrapper import flush_langfuse
+    flush_langfuse()  # should complete silently
+
 
 def test_langfuse_wrapper_falls_back_when_not_configured():
     """If Langfuse env vars are absent, the wrapper should be a no-op pass-through."""

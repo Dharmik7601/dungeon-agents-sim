@@ -122,7 +122,17 @@ def _cell_contents(cell: CellType) -> list[str]:
 class SemanticLogger:
     def __init__(self, data_dir: str | None = None) -> None:
         self._data_dir = Path(data_dir) if data_dir else _DEFAULT_DATA_DIR
+        self._data_dir.mkdir(parents=True, exist_ok=True)
         self._events: list[dict] = []
+        # WIP file written after every event so traces survive crashes.
+        # Deleted by flush() once the final named file is written.
+        self._wip_path: Path | None = None
+
+    def _wip(self) -> Path:
+        """Return (and lazily create) the crash-recovery WIP file path."""
+        if self._wip_path is None:
+            self._wip_path = self._data_dir / f"run_wip_{uuid.uuid4().hex[:8]}.json"
+        return self._wip_path
 
     def log_event(
         self,
@@ -178,6 +188,8 @@ class SemanticLogger:
             },
         }
         self._events.append(event)
+        # Write immediately so events survive a crash.
+        self._wip().write_text(json.dumps(self._events, indent=2), encoding="utf-8")
 
     def flush(self, run_id: str = "") -> str:
         self._data_dir.mkdir(parents=True, exist_ok=True)
@@ -185,6 +197,9 @@ class SemanticLogger:
         suffix = f"_{run_id}" if run_id else ""
         path = self._data_dir / f"run{suffix}_{ts}.json"
         path.write_text(json.dumps(self._events, indent=2), encoding="utf-8")
+        # Remove the WIP file now that the final file exists.
+        if self._wip_path and self._wip_path.exists():
+            self._wip_path.unlink()
         return str(path)
 
 

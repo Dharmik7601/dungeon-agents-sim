@@ -296,7 +296,7 @@ def _make_llm_client(tmp_path, content="<system_prompt>{{AGENT_ID}}{{TURN_NUMBER
     prompt_file.write_text(content)
     with patch("src.agents.llm_client.genai") as mock_genai:
         mock_genai.Client.return_value = MagicMock()
-        client = LLMClient(model_name="gemma-3-27b-it", prompt_path=str(prompt_file))
+        client = LLMClient(model_name="gemma-4-31b-it", prompt_path=str(prompt_file))
     client._mock_genai_client = mock_genai  # not used after init; tests patch at call time
     return client, str(prompt_file)
 
@@ -332,7 +332,7 @@ def test_llmclient_injects_all_placeholders(tmp_path):
         mock_genai.Client.return_value = mock_client
         mock_client.models.generate_content.return_value = mock_response
 
-        llm = LLMClient(model_name="gemma-3-27b-it", prompt_path=str(prompt_file))
+        llm = LLMClient(model_name="gemma-4-31b-it", prompt_path=str(prompt_file))
         result = llm.get_decision(agent, ws)
 
         call_kwargs = mock_client.models.generate_content.call_args[1]
@@ -370,7 +370,7 @@ def test_llmclient_parses_json_response(tmp_path):
         mock_client = MagicMock()
         mock_genai.Client.return_value = mock_client
         mock_client.models.generate_content.return_value = mock_response
-        llm = LLMClient(model_name="gemma-3-27b-it", prompt_path=str(prompt_file))
+        llm = LLMClient(model_name="gemma-4-31b-it", prompt_path=str(prompt_file))
         result = llm.get_decision(agent, ws)
 
     assert result.tool_name == "look"
@@ -391,7 +391,7 @@ def test_llmclient_increments_parse_failures_on_bad_json(tmp_path):
         mock_client = MagicMock()
         mock_genai.Client.return_value = mock_client
         mock_client.models.generate_content.return_value = mock_response
-        llm = LLMClient(model_name="gemma-3-27b-it", prompt_path=str(prompt_file))
+        llm = LLMClient(model_name="gemma-4-31b-it", prompt_path=str(prompt_file))
         with pytest.raises(ParseError):
             llm.get_decision(agent, ws)
 
