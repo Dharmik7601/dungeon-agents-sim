@@ -35,3 +35,13 @@
 
 ## end-to-end
 - [x] End-to-end smoke test: run a full simulation, assert `run_*.json` is produced with valid schema, assert CLI viewer exits cleanly on that file
+
+## prompt-context
+- [x] Feature B: add `last_known_position` + `last_known_position_turn` to `AgentState`; update `_check_coordinates` to set them; inject `{{LAST_KNOWN_LOCATION}}` via `LLMClient` and prompt template
+- [ ] Feature C: add `last_mistake` to `AgentState`; record on tool failure and `ParseError` in `GameLoop`; inject `{{LAST_MISTAKE}}` into prompt
+- [ ] Feature D: add `recent_calls` (max 5) to `AgentState`; append after every dispatch in `GameLoop`; inject `{{RECENT_CALLS}}` into prompt
+- [ ] Integration tests for prompt-context
+
+## interrupt
+- [ ] Feature A: add `EndCondition.INTERRUPTED`; `GameLoop` accepts `stop_event`; `run_simulation.py` spawns `msvcrt`-based daemon thread for Ctrl+E
+- [ ] Integration tests for interrupt

@@ -31,12 +31,18 @@ class LLMClient:
         inventory_str = json.dumps(agent.inventory) if agent.inventory else "[]"
         messages_str = "\n".join(agent.message_inbox) if agent.message_inbox else "(none)"
 
+        if agent.last_known_position is not None:
+            location_str = f"{agent.last_known_position} confirmed on turn {agent.last_known_position_turn}"
+        else:
+            location_str = "(unknown)"
+
         return (
             self._prompt_template
             .replace("{{AGENT_ID}}", agent.agent_id)
             .replace("{{TURN_NUMBER}}", str(world.turn_number))
             .replace("{{SHADOW_MAP}}", shadow_map_str)
             .replace("{{INVENTORY}}", inventory_str)
+            .replace("{{LAST_KNOWN_LOCATION}}", location_str)
             .replace("{{MESSAGES}}", messages_str)
         )
 

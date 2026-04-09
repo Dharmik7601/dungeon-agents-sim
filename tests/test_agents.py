@@ -396,3 +396,91 @@ def test_llmclient_increments_parse_failures_on_bad_json(tmp_path):
             llm.get_decision(agent, ws)
 
     assert agent.consecutive_parse_failures == 1
+
+
+# ---------------------------------------------------------------------------
+# Feature B: last_known_position — AgentState fields
+# ---------------------------------------------------------------------------
+
+def test_agentstate_has_last_known_location_fields():
+    a = AgentState(agent_id="agent_a", position=(0, 0))
+    assert a.last_known_position is None
+    assert a.last_known_position_turn is None
+
+
+def test_check_coordinates_sets_last_known_position():
+    ws = _make_world()
+    ws.turn_number = 7
+    agent = _make_agent("agent_a", (2, 3))
+    result = ToolDispatcher.dispatch("check_coordinates", {}, agent, ws)
+    assert result.status == "success"
+    assert agent.last_known_position == (2, 3)
+    assert agent.last_known_position_turn == 7
+
+
+def test_check_coordinates_twice_updates_to_latest():
+    ws = _make_world()
+    ws.turn_number = 3
+    agent = _make_agent("agent_a", (1, 1))
+    ToolDispatcher.dispatch("check_coordinates", {}, agent, ws)
+    # Move agent and advance turn
+    agent.position = (2, 2)
+    ws.turn_number = 9
+    ToolDispatcher.dispatch("check_coordinates", {}, agent, ws)
+    assert agent.last_known_position == (2, 2)
+    assert agent.last_known_position_turn == 9
+
+
+def test_other_tools_do_not_set_last_known_position():
+    ws = _make_world()
+    agent = _make_agent("agent_a", (0, 0))
+    ToolDispatcher.dispatch("look", {}, agent, ws)
+    assert agent.last_known_position is None
+    assert agent.last_known_position_turn is None
+
+
+# ---------------------------------------------------------------------------
+# Feature B: last_known_position — prompt injection
+# ---------------------------------------------------------------------------
+
+def _make_prompt_file_with_location(tmp_path) -> str:
+    content = (
+        "<system_prompt>\n"
+        "Agent: {{AGENT_ID}} Turn: {{TURN_NUMBER}}\n"
+        "Map: {{SHADOW_MAP}}\n"
+        "Inventory: {{INVENTORY}}\n"
+        "Location: {{LAST_KNOWN_LOCATION}}\n"
+        "Messages: {{MESSAGES}}\n"
+        "</system_prompt>"
+    )
+    p = tmp_path / "agent_system.md"
+    p.write_text(content)
+    return str(p)
+
+
+def test_build_prompt_injects_last_known_location_when_set(tmp_path):
+    ws = _make_world()
+    ws.turn_number = 4
+    agent = _make_agent("agent_a", (3, 5))
+    agent.last_known_position = (3, 5)
+    agent.last_known_position_turn = 4
+
+    with patch("src.agents.llm_client.genai"):
+        llm = LLMClient(model_name="gemma-4-31b-it", prompt_path=_make_prompt_file_with_location(tmp_path))
+
+    prompt = llm._build_prompt(agent, ws)
+    assert "(3, 5) confirmed on turn 4" in prompt
+    assert "{{LAST_KNOWN_LOCATION}}" not in prompt
+
+
+def test_build_prompt_injects_unknown_when_location_never_set(tmp_path):
+    ws = _make_world()
+    agent = _make_agent("agent_a", (0, 0))
+    # last_known_position is None by default
+
+    with patch("src.agents.llm_client.genai"):
+        llm = LLMClient(model_name="gemma-4-31b-it", prompt_path=_make_prompt_file_with_location(tmp_path))
+
+    prompt = llm._build_prompt(agent, ws)
+    assert "(unknown)" in prompt
+    assert "{{LAST_KNOWN_LOCATION}}" not in prompt

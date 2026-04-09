@@ -97,6 +97,8 @@ def _pick_up(args: dict, agent: AgentState, world: WorldState) -> ToolResult:
 
 def _check_coordinates(args: dict, agent: AgentState, world: WorldState) -> ToolResult:
     agent.shadow_map[agent.position] = world.grid[agent.position[1]][agent.position[0]]
+    agent.last_known_position = agent.position
+    agent.last_known_position_turn = world.turn_number
     return _succeed(agent, f"Position is {agent.position}", {"position": agent.position})
 
 

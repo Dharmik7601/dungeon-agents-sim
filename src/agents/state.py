@@ -34,3 +34,5 @@ class AgentState:
     message_outbox: list[str] = field(default_factory=list)
     consecutive_invalid_actions: int = 0
     consecutive_parse_failures: int = 0
+    last_known_position: tuple[int, int] | None = None
+    last_known_position_turn: int | None = None

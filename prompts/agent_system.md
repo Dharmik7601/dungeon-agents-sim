@@ -17,6 +17,9 @@ You and your partner agent must both reach the locked exit door. One of you must
 **Your inventory:**
 {{INVENTORY}}
 
+**Last confirmed location (via check_coordinates):**
+{{LAST_KNOWN_LOCATION}}
+
 **Messages received this turn:**
 {{MESSAGES}}
 
