@@ -209,3 +209,5 @@ __marimo__/
 
 # Simulation run logs (keep folder via .gitkeep, ignore all log files)
 data/*.json
+
+# Saved demo logs are committed intentionally — do not add saved_logs/ here

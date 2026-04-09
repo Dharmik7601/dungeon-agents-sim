@@ -8,15 +8,16 @@
 
 ## Architecture
 
-### Three-Layer State Model (Core Invariant)
+### State Model
 
-Every agent turn maintains three strictly separated state objects:
+Every agent turn maintains four strictly separated state layers:
 
 | Layer | Object | Updated by | Purpose |
 |---|---|---|---|
 | **Ground Truth** | `WorldState` | Tool execution results | Authoritative reality — never passed to agents directly |
 | **Shadow State** | `AgentState.shadow_map` | Explicit agent tool calls (`look`, `check_coordinates`, `check_inventory`) | What the simulation has told this agent — injected into prompt |
 | **Agent Beliefs** | Parsed from LLM JSON (`expected_state`) | LLM reasoning output | What the agent expects to be true before acting |
+| **Agent Input** | `state_context.agent_input` in the semantic log | Snapshotted by `GameLoop` before each dispatch | Prompt context at decision time: inbox, recent calls, last mistake, last known location |
 
 Shadow state is updated **only** as a side-effect of the agent calling specific tools. It does not auto-sync with ground truth. This intentional lag is the mechanism that produces observable state-desync bugs.
 
@@ -30,8 +31,11 @@ Message delivery is delayed by one turn (outbox → inbox on next turn), creatin
 
 - External XML prompt files: `prompts/agent_system.md`
 - Format: `<system_prompt>...</system_prompt>` with string-replacement placeholders
-- Placeholders: `{{AGENT_ID}}`, `{{TURN_NUMBER}}`, `{{SHADOW_MAP}}`, `{{INVENTORY}}`, `{{MESSAGES}}`
+- Placeholders: `{{AGENT_ID}}`, `{{TURN_NUMBER}}`, `{{SHADOW_MAP}}`, `{{INVENTORY}}`, `{{MESSAGES}}`, `{{LAST_KNOWN_LOCATION}}`, `{{LAST_MISTAKE}}`, `{{RECENT_CALLS}}`
 - `SHADOW_MAP` is cumulative — all cells ever observed are included, not just the most recent
+- `LAST_KNOWN_LOCATION` — position + turn confirmed by the last `check_coordinates` call; `"(unknown)"` until first call
+- `LAST_MISTAKE` — tool name, turn number, and failure reason from the most recent failed action; `"(none)"` if no failure yet
+- `RECENT_CALLS` — up to 5 most recent tool calls with arguments and turn numbers (sliding window)
 - LLM responds strictly in JSON: `{ "reasoning", "expected_state", "tool_name", "arguments" }`
 
 ### LLM Model
@@ -44,7 +48,11 @@ Two artifacts produced per run:
 
 1. **Langfuse infra traces** — latency, tokens, raw I/O via the Langfuse v4 API. Each call creates a parent trace span (`start_as_current_observation(as_type="span")`) with a nested generation span (`as_type="generation"`) carrying the prompt input, output, and model name. Tagged with `run_id`, `turn_number`, and `agent_id`. `lf.flush()` is called after every generation for real-time dashboard visibility. Falls back to a transparent no-op when `LANGFUSE_PUBLIC_KEY` / `LANGFUSE_SECRET_KEY` are absent.
 
-2. **Semantic JSON log** — full three-layer state + deltas per event, stored in `data/`.
+2. **Semantic JSON log** — full state + deltas per event, stored in `data/`. Each event's `state_context` has four layers:
+   - `agent_beliefs` — LLM reasoning and `expected_state` from the JSON response
+   - `shadow_state` — all cells the agent has observed, serialised as `cell_status_{x}_{y}` keys
+   - `ground_truth` — sparse snapshot of `WorldState`: only non-empty cells are included; `grid_width`/`grid_height` always present so consumers know the full board size without inferring it from cell keys
+   - `agent_input` — prompt context captured at call time: `message_inbox`, `recent_calls` (last 5), `last_mistake`, `last_known_location` (position + turn from last `check_coordinates`, or null)
    - **During a run:** written incrementally to `data/run_wip_<uuid8>.json` after every agent action. This file survives a crash and can be opened directly with the diagnostic viewer.
    - **On clean exit:** events are written to `data/run_{run_id}_{timestamp}.json` and the WIP file is deleted.
 
@@ -53,6 +61,10 @@ Two artifacts produced per run:
 The live simulation renders a `rich`-based board after every agent action (screen clears and redraws in place). The diagnostic viewer renders the board state captured in each event's `ground_truth` snapshot before displaying the event's success line or incident panel.
 
 Board symbols: `A` agent_a · `B` agent_b · `✦` both at same cell · `K` key · `X` exit (locked) · `O` exit (open) · `█` wall · `·` empty
+
+**Diagnostic viewer structure** — each event shows:
+- **Success:** dim single-line header + `── Input ──` (last known location, shadow size, inbox, last mistake, recent calls) + `── Output ──` (reasoning)
+- **Failure:** red `Panel` titled `INCIDENT — Turn N | agent_id` with `── Input ──`, `── Output ──` (reasoning + action), and `── Result ──` (error message + state desync diff)
 
 ---
 
