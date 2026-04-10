@@ -25,6 +25,12 @@ python -m src.loop.run_simulation
 ```
 Press `Ctrl+E` at any time to stop the simulation mid-run. The semantic log is preserved up to that point.
 
+**Run multiple simulations in sequence:**
+```bash
+make batch          # runs 10 times by default
+make batch RUNS=5   # or specify a count
+```
+
 **Replay a diagnostic log:**
 ```bash
 make viewer LOG=data/run_<timestamp>.json
@@ -35,6 +41,22 @@ python -m src.cli.diagnostic_viewer --log-file data/run_<timestamp>.json
 Options:
 - `--filter failures_only` — show only failed turns
 - `--agent agent_a` or `--agent agent_b` — restrict output to one agent
+
+**Analyse a single run:**
+```bash
+make analyze LOG=data/run_<timestamp>.json
+# or
+python -m src.cli.single_run_analysis --log-file data/run_<timestamp>.json
+```
+
+**Analyse all saved runs:**
+```bash
+make analyze-all
+# or with a custom directory
+make analyze-all DIR=saved_logs/
+# or
+python -m src.cli.cross_run_analysis --dir saved_logs/
+```
 
 **Run tests:**
 ```bash

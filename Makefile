@@ -2,12 +2,14 @@
 
 LOG ?=
 DIR ?= saved_logs/
+RUNS ?= 10
 
-.PHONY: help run viewer test lint format clean save analyze analyze-all
+.PHONY: help run batch viewer test lint format clean save analyze analyze-all
 
 help:
 	@echo "Usage:"
 	@echo "  make run              Run the simulation (Ctrl+E to stop mid-run)"
+	@echo "  make batch [RUNS=N]   Run the simulation N times in sequence (default: 10)"
 	@echo "  make viewer LOG=<path> Replay a semantic log in the terminal"
 	@echo "  make test             Run the full pytest test suite"
 	@echo "  make lint             Lint with ruff"
@@ -19,6 +21,9 @@ help:
 
 run:
 	python -m src.loop.run_simulation
+
+batch:
+	python -m src.loop.run_batch --runs $(RUNS)
 
 viewer:
 ifeq ($(LOG),)
