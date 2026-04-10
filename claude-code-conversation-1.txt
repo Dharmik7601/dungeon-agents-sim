@@ -1,0 +1,640 @@
+ ▐▛███▜▌   Claude Code v2.1.97
+▝▜█████▛▘  Sonnet 4.6 · Claude Pro
+  ▘▘ ▝▝    ~\Storage\Work\Code\dungeon-agents-sim
+
+✻ Conversation compacted (ctrl+o for history)
+
+  ⎿  Read src\cli\diagnostic_viewer.py (219 lines)
+  ⎿  Read src\loop\game_loop.py (179 lines)
+  ⎿  Read src\tracing\semantic_logger.py (250 lines)
+  ⎿  Referenced file tests\test_cli_viewer.py
+  ⎿  Referenced file tests\test_game_loop.py
+  ⎿  Skills restored (test-driven-development, creating-tasks, 
+     initializing-project)
+
+  Read 4 files (ctrl+o to expand)
+
+● Update(docs\features\tracing.md)
+  ⎿  Added 1 line, removed 1 line
+       9  
+      10  - `_ground_truth_snapshot(world)` — flattens `WorldState` into 
+          a **sparse** standardised key format: `cell_status_{x}_{y}` onl
+          y for non-empty cells, `{agent_id}_position` for each agent, pl
+          us `grid_width` and `grid_height` so the board renderer always 
+          knows the full grid size. Empty cells are omitted; consumers tr
+          eat missing `cell_status_*` keys as `"empty"`.
+      11  - `_compute_deltas(tool_name, expected_state, shadow_state_befo
+          re, world, agent_pos)` — Scenario Mapping Matrix: evaluates onl
+          y the keys relevant to the tool called. For each mismatch betwe
+          en `expected_state` and ground truth, emits a delta dict with `
+          property_key`, `expected_value`, `actual_value`, `discrepancy_s
+          ource`. Source classification: `"fog_of_war"` (cell not in shad
+          ow_state_before), `"stale_shadow_state"` (observed but outdated
+          ), `"hallucination"` (other). No-op tools (`look`, `check_*`, `
+          send_message`) always produce empty deltas.
+      12 -- `SemanticLogger.log_event(...)` — builds one event per schema
+         -: `event_id` (UUID), `timestamp` (ISO 8601), `action`, `state_c
+         -ontext` (four layers: `agent_beliefs`, `shadow_state`, `ground_
+         -truth`, `agent_input`), `execution_result` (status, error_messa
+         -ge, deltas). `agent_input` captures the prompt context at call 
+         -time: `message_inbox`, `recent_calls` (snapshot before this act
+         -ion), `last_mistake` (snapshot before this action). Appends to 
+         -internal `_events` list.                                       
+      12 +- `SemanticLogger.log_event(...)` — builds one event per schema
+         +: `event_id` (UUID), `timestamp` (ISO 8601), `action`, `state_c
+         +ontext` (four layers: `agent_beliefs`, `shadow_state`, `ground_
+         +truth`, `agent_input`), `execution_result` (status, error_messa
+         +ge, deltas). `agent_input` captures the prompt context at call 
+         +time: `message_inbox`, `recent_calls` (snapshot before this act
+         +ion), `last_mistake` (snapshot before this action), `last_known
+         +_location` (position + turn_number from last `check_coordinates
+         +` call, or null). Appends to internal `_events` list.          
+      13  - `SemanticLogger.flush(run_id)` — serialises `_events` to `dat
+          a/run_{run_id}_{ts}.json`, creates the `data/` directory if mis
+          sing, deletes the WIP file, returns the file path.
+      14  
+      15  **`src/tracing/langfuse_wrapper.py`**
+
+● Update(docs\features\tracing.md)
+  ⎿  Added 1 line, removed 1 line
+      22  - `src/tracing/semantic_logger.py`
+      23    - `_ground_truth_snapshot(world) -> dict`
+      24    - `_compute_deltas(tool_name, expected_state, shadow_state_be
+          fore, world, agent_pos) -> list[dict]`
+      25 -  - `SemanticLogger.log_event(*, turn_number, agent_id, llm_res
+         -ponse, shadow_state_before, tool_result, world)`               
+      25 +  - `SemanticLogger.log_event(*, turn_number, agent_id, llm_res
+         +ponse, shadow_state_before, tool_result, world, message_inbox=N
+         +one, recent_calls_before=None, last_mistake_before=None, last_k
+         +nown_location_before=None)`                                    
+      26    - `SemanticLogger.flush(run_id="") -> str`
+      27  - `src/tracing/langfuse_wrapper.py`
+      28    - `wrap_with_langfuse(llm_client, run_id, turn_number, agent_
+          id) -> Callable`
+
+● Update(docs\features\tracing.md)
+  ⎿  Added 1 line, removed 1 line
+      28    - `wrap_with_langfuse(llm_client, run_id, turn_number, agent_
+          id) -> Callable`
+      29  
+      30  ## Testing
+      31 -- **Unit** — `_ground_truth_snapshot` produces correct cell and
+         - agent keys (sparse: no empty cells), includes `grid_width`/`gr
+         -id_height`, omits `cell_status_*` keys for empty cells; `_compu
+         -te_deltas` treats missing cell keys as "empty" (no spurious del
+         -ta); `_compute_deltas` for `move` (no mismatch, wall mismatch, 
+         -fog-of-war); for `pick_up` (stale shadow); for `use_item` (inve
+         -ntory mismatch); no-op tools produce empty deltas; `log_event` 
+         -produces event with all required schema keys including `state_c
+         -ontext.agent_input`; `agent_input` contains correct `message_in
+         -box`, `recent_calls`, `last_mistake`; defaults to empty values 
+         -when kwargs not provided; `flush` writes valid JSON array, crea
+         -tes missing dir, handles empty event list; unique `event_id` pe
+         -r event                                                        
+      31 +- **Unit** — `_ground_truth_snapshot` produces correct cell and
+         + agent keys (sparse: no empty cells), includes `grid_width`/`gr
+         +id_height`, omits `cell_status_*` keys for empty cells; `_compu
+         +te_deltas` treats missing cell keys as "empty" (no spurious del
+         +ta); `_compute_deltas` for `move` (no mismatch, wall mismatch, 
+         +fog-of-war); for `pick_up` (stale shadow); for `use_item` (inve
+         +ntory mismatch); no-op tools produce empty deltas; `log_event` 
+         +produces event with all required schema keys including `state_c
+         +ontext.agent_input`; `agent_input` contains correct `message_in
+         +box`, `recent_calls`, `last_mistake`, `last_known_location`; de
+         +faults to empty/null values when kwargs not provided; `flush` w
+         +rites valid JSON array, creates missing dir, handles empty even
+         +t list; unique `event_id` per event                            
+      32  - **Integration** — known `stale_shadow_state` mismatch appears
+           in `execution_result.deltas`; Langfuse wrapper falls back grac
+          efully when env vars absent; Langfuse v4 API path verified via 
+          mock
+      33  - **Edge cases** — `fog_of_war` when cell absent from shadow_st
+          ate_before; empty flush produces `[]`; data dir auto-created
+
+● Now update cli-viewer.md:
+
+● Write(docs\features\cli-viewer.md)
+  ⎿  Added 20 lines, removed 16 lines
+      1  # CLI Viewer
+      2  
+      3  ## What It Does
+      4 -A standalone diagnostic replay tool that parses a `run_*.json` s
+        -emantic log and renders a human-readable incident timeline in th
+        -e terminal. Successful turns are printed as muted single-line en
+        -tries. Failed turns are expanded into high-visibility Incident B
+        -locks showing: what action was attempted, a unified diff of the 
+        -state desync (from `execution_result.deltas`), and the agent's r
+        -aw LLM reasoning.                                               
+      4 +A standalone diagnostic replay tool that parses a `run_*.json` s
+        +emantic log and renders a human-readable incident timeline in th
+        +e terminal. Successful turns are printed as muted single-line en
+        +tries. Failed turns are expanded into high-visibility Incident P
+        +anels with three explicit sections (Input / Output / Result) sho
+        +wing what information the agent had, what it decided, and what w
+        +ent wrong.                                                      
+      5  
+      6  ## Implementation
+      7  
+     ...
+      13  - `--agent` (optional) — `agent_a` | `agent_b` — restrict outpu
+          t to one agent
+      14  
+      15  **Rendering logic:**
+      16 -- Load and parse JSON file.                                    
+      17 -- Iterate events in order, applying `--filter` and `--agent` fi
+         -lters.                                                         
+      18 -- For each passing event:                                      
+      19 -  - **Success** → `rich.text.Text` with `dim` style: `[Turn X] 
+         -{agent_id} ✓ {tool_name}({args})`, reasoning quote, then a comp
+         -act `agent_input` block (shadow cell count, inbox, last mistake
+         -, recent calls)                                                
+      20 -  - **Failure** → `rich.panel.Panel` with red border containing
+         - five sections:                                                
+      21 -    1. **What Happened** — tool + args from `action`           
+      22 -    2. **State Desync Diff** — rendered from `execution_result.
+         -deltas`                                                        
+      23 -    3. **Agent Reasoning** — italicised quote from `state_conte
+         -xt.agent_beliefs.reasoning`                                    
+      24 -    4. **Agent Input State** — inbox messages, last mistake, re
+         -cent calls from `state_context.agent_input`                    
+      25 -    5. **Shadow State** — all cells from `state_context.shadow_
+         -state`                                                         
+      16  
+      17 +For each event (after applying `--filter` and `--agent`), the b
+         +oard state captured in `state_context.ground_truth` is rendered
+         + first using `board_renderer.render_board_from_snapshot`, follo
+         +wed by the event itself.                                       
+      18 +                                                               
+      19 +- **Success** → dim `rich.text.Text` lines:                    
+      20 +  - Header: `[Turn X] {agent_id} ✓ {tool_name}({args})`        
+      21 +  - `── Input ──` section: last known location, shadow cell cou
+         +nt, inbox messages, last mistake, recent calls                 
+      22 +  - `── Output ──` section: agent reasoning quote              
+      23 +                                                               
+      24 +- **Failure** → `rich.panel.Panel` with red border and title `I
+         +NCIDENT — Turn X | {agent_id}`, containing three labelled secti
+         +ons:                                                           
+      25 +  - `── Input ──`: last known location, shadow cell count, inbo
+         +x, last mistake, recent calls, full shadow state cell dump     
+      26 +  - `── Output ──`: agent reasoning, action (tool + args)      
+      27 +  - `── Result ──`: error message from `execution_result.error_
+         +message`, state desync diff from `execution_result.deltas`     
+      28 +                                                               
+      29  **Exit codes:** 0 on success, 1 on missing file or invalid JSON
+          .
+      30  
+      31  ## Key Files
+      32  - `src/cli/__init__.py` — empty package init
+      33  - `src/cli/diagnostic_viewer.py` — full CLI tool
+      34    - `main(argv=None)` — entry point; parses args, calls `render
+          _log`
+      33 -  - `render_log(events, filter_mode, agent_filter, console)` — 
+         -iterates and renders events                                    
+      34 -  - `render_success(event, console)` — dim single-line Text    
+      35 -  - `render_incident(event, console)` — red Panel with three se
+         -ctions                                                         
+      36 -  - `_fmt_diff(deltas)` — formats delta list as EXPECTED/ACTUAL
+         -/Source diff string                                            
+      35 +  - `render_log(events, filter_mode, agent_filter, console)` — 
+         +iterates events, renders board + event                         
+      36 +  - `render_success(event, console)` — dim Input/Output section
+         +s as Text                                                      
+      37 +  - `render_incident(event, console)` — red Panel with Input/Ou
+         +tput/Result sections                                           
+      38 +  - `_fmt_diff(deltas) -> str` — formats delta list as EXPECTED
+         +/ACTUAL/Source diff string                                     
+      39 +  - `_fmt_location(loc) -> str` — formats `last_known_location`
+         + dict as `"(x, y) confirmed on turn N"` or `"(unknown)"`       
+      40 +  - `_fmt_input_lines(event, indent="  ") -> list[str]` — share
+         +d helper that builds Input section lines from `state_context.ag
+         +ent_input`: last known location, shadow cell count, inbox, last
+         + mistake, recent calls                                         
+      41  - `tests/test_cli_viewer.py` — full test suite
+      42  
+      43  ## Testing
+      40 -- **Unit** — `_fmt_diff` formats property key, discrepancy sour
+         -ce, EXPECTED/ACTUAL labels, multiple deltas, and empty list; `r
+         -ender_success` renders turn number, agent ID, tool name, reason
+         -ing, and compact agent_input block (inbox, last mistake, recent
+         - calls, shadow cell count); `render_incident` prints a Panel co
+         -ntaining tool name, reasoning, delta property key, discrepancy 
+         -source, agent input state (inbox, last mistake, recent calls), 
+         -and shadow state cells; both renderers handle events without `a
+         -gent_input` key without crashing                               
+      44 +- **Unit** — `_fmt_diff` formats property key, discrepancy sour
+         +ce, EXPECTED/ACTUAL labels, multiple deltas, and empty list; `_
+         +fmt_location` returns correct string when location present and 
+         +`"(unknown)"` when None; `_fmt_input_lines` includes all five i
+         +nput fields; `render_success` renders turn number, agent ID, to
+         +ol name, reasoning, and full Input section (location, shadow co
+         +unt, inbox, last mistake, recent calls); `render_incident` prin
+         +ts a red Panel containing Input/Output/Result sections with err
+         +or message, delta property key, discrepancy source, reasoning, 
+         +and shadow state cells; both renderers handle events without `a
+         +gent_input` key without crashing                               
+      45  - **Integration** — `render_log` with `all` calls both renderer
+          s; `failures_only` skips success events; `--agent` filter skips
+           the other agent; empty event list and all-success list with `f
+          ailures_only` render nothing; `main()` on a mixed log exits 0; 
+          `--agent` and `--filter` flags accepted together
+      46  - **Edge cases** — non-existent `--log-file` prints a clear err
+          or to stderr and exits 1; invalid JSON exits 1; empty log exits
+           0; `failures_only` on a log with no failures exits 0
+
+● Now update DESIGN.md — Prompt System and Observability Output sections:
+
+● Update(docs\DESIGN.md)
+  ⎿  Added 4 lines, removed 1 line
+      30  
+      31  - External XML prompt files: `prompts/agent_system.md`
+      32  - Format: `<system_prompt>...</system_prompt>` with string-repl
+          acement placeholders
+      33 -- Placeholders: `{{AGENT_ID}}`, `{{TURN_NUMBER}}`, `{{SHADOW_MA
+         -P}}`, `{{INVENTORY}}`, `{{MESSAGES}}`                          
+      33 +- Placeholders: `{{AGENT_ID}}`, `{{TURN_NUMBER}}`, `{{SHADOW_MA
+         +P}}`, `{{INVENTORY}}`, `{{MESSAGES}}`, `{{LAST_KNOWN_LOCATION}}
+         +`, `{{LAST_MISTAKE}}`, `{{RECENT_CALLS}}`                      
+      34  - `SHADOW_MAP` is cumulative — all cells ever observed are incl
+          uded, not just the most recent
+      35 +- `LAST_KNOWN_LOCATION` — position + turn confirmed by the last
+         + `check_coordinates` call; `"(unknown)"` until first call      
+      36 +- `LAST_MISTAKE` — tool name, turn number, and failure reason f
+         +rom the most recent failed action; `"(none)"` if no failure yet
+      37 +- `RECENT_CALLS` — up to 5 most recent tool calls with argument
+         +s and turn numbers (sliding window)                            
+      38  - LLM responds strictly in JSON: `{ "reasoning", "expected_stat
+          e", "tool_name", "arguments" }`
+      39  
+      40  ### LLM Model
+
+● Update(docs\DESIGN.md)
+  ⎿  Added 5 lines, removed 1 line
+      47  
+      48  1. **Langfuse infra traces** — latency, tokens, raw I/O via the
+           Langfuse v4 API. Each call creates a parent trace span (`start
+          _as_current_observation(as_type="span")`) with a nested generat
+          ion span (`as_type="generation"`) carrying the prompt input, ou
+          tput, and model name. Tagged with `run_id`, `turn_number`, and 
+          `agent_id`. `lf.flush()` is called after every generation for r
+          eal-time dashboard visibility. Falls back to a transparent no-o
+          p when `LANGFUSE_PUBLIC_KEY` / `LANGFUSE_SECRET_KEY` are absent
+          .
+      49  
+      50 -2. **Semantic JSON log** — full three-layer state + deltas per 
+         -event, stored in `data/`.                                      
+      50 +2. **Semantic JSON log** — full state + deltas per event, store
+         +d in `data/`. Each event's `state_context` has four layers:    
+      51 +   - `agent_beliefs` — LLM reasoning and `expected_state` from 
+         +the JSON response                                              
+      52 +   - `shadow_state` — all cells the agent has observed, seriali
+         +sed as `cell_status_{x}_{y}` keys                              
+      53 +   - `ground_truth` — sparse snapshot of `WorldState`: only non
+         +-empty cells are included; `grid_width`/`grid_height` always pr
+         +esent so consumers know the full board size without inferring i
+         +t from cell keys                                               
+      54 +   - `agent_input` — prompt context captured at call time: `mes
+         +sage_inbox`, `recent_calls` (last 5), `last_mistake`, `last_kno
+         +wn_location` (position + turn from last `check_coordinates`, or
+         + null)                                                         
+      55     - **During a run:** written incrementally to `data/run_wip_<
+          uuid8>.json` after every agent action. This file survives a cra
+          sh and can be opened directly with the diagnostic viewer.
+      56     - **On clean exit:** events are written to `data/run_{run_id
+          }_{timestamp}.json` and the WIP file is deleted.
+      57  
+
+● Now also update the Three-Layer State Model section header to reflect the
+  fourth layer:
+
+● Update(docs\DESIGN.md)
+  ⎿  Added 3 lines, removed 2 lines
+       8  
+       9  ## Architecture
+      10  
+      11 -### Three-Layer State Model (Core Invariant)                   
+      11 +### State Model                                                
+      12  
+      13 -Every agent turn maintains three strictly separated state objec
+         -ts:                                                            
+      13 +Every agent turn maintains four strictly separated state layers
+         +:                                                              
+      14  
+      15  | Layer | Object | Updated by | Purpose |
+      16  |---|---|---|---|
+      17  | **Ground Truth** | `WorldState` | Tool execution results | Au
+          thoritative reality — never passed to agents directly |
+      18  | **Shadow State** | `AgentState.shadow_map` | Explicit agent t
+          ool calls (`look`, `check_coordinates`, `check_inventory`) | Wh
+          at the simulation has told this agent — injected into prompt |
+      19  | **Agent Beliefs** | Parsed from LLM JSON (`expected_state`) |
+           LLM reasoning output | What the agent expects to be true befor
+          e acting |
+      20 +| **Agent Input** | `state_context.agent_input` in the semantic
+         + log | Snapshotted by `GameLoop` before each dispatch | Prompt 
+         +context at decision time: inbox, recent calls, last mistake, la
+         +st known location |                                            
+      21  
+      22  Shadow state is updated **only** as a side-effect of the agent 
+          calling specific tools. It does not auto-sync with ground truth
+          . This intentional lag is the mechanism that produces observabl
+          e state-desync bugs.
+      23  
+
+● Now update the Terminal Display section to mention the viewer's
+  Input/Output/Result structure:
+
+● Update(docs\DESIGN.md)
+  ⎿  Added 4 lines
+      62  
+      63  Board symbols: `A` agent_a · `B` agent_b · `✦` both at same cel
+          l · `K` key · `X` exit (locked) · `O` exit (open) · `█` wall · 
+          `·` empty
+      64  
+      65 +**Diagnostic viewer structure** — each event shows:            
+      66 +- **Success:** dim single-line header + `── Input ──` (last kno
+         +wn location, shadow size, inbox, last mistake, recent calls) + 
+         +`── Output ──` (reasoning)                                     
+      67 +- **Failure:** red `Panel` titled `INCIDENT — Turn N | agent_id
+         +` with `── Input ──`, `── Output ──` (reasoning + action), and 
+         +`── Result ──` (error message + state desync diff)             
+      68 +                                                               
+      69  ---
+      70  
+      71  ## Directory Structure
+
+● Now rewrite README.md:
+
+● Write(README.md)
+  ⎿  Added 123 lines, removed 1 line
+        1 -# dungeon-agents-sim                                          
+        1   No newline at end of file
+        2 +# dungeon-agents-sim                                          
+        3 +                                                              
+        4 +A multi-agent LLM simulation on a procedurally generated 8×8 g
+          +rid dungeon. The primary goal is generating deep, structured o
+          +bservability traces of agent decision-making — specifically ca
+          +pturing the delta between each agent's belief state and ground
+          + truth reality. Two AI agents (powered by Gemma 4) explore the
+          + dungeon, coordinate via delayed messaging, and produce a rich
+          + semantic JSON log that can be replayed with a standalone CLI 
+          +diagnostic viewer.                                            
+        5 +                                                              
+        6 +## Prerequisites                                              
+        7 +                                                              
+        8 +- Python 3.11+                                                
+        9 +- A Google Generative AI API key with access to `gemma-4-31b-i
+          +t`                                                            
+       10 +- (Optional) A Langfuse account for LLM infra tracing         
+       11 +                                                              
+       12 +## Setup                                                      
+       13 +                                                              
+       14 +```bash                                                       
+       15 +pip install -r requirements-dev.txt                           
+       16 +cp .env.example .env                                          
+       17 +# Edit .env and fill in GOOGLE_API_KEY and optionally LANGFUSE
+          +_* keys                                                       
+       18 +```                                                           
+       19 +                                                              
+       20 +## Running                                                    
+       21 +                                                              
+       22 +**Run a simulation:**                                         
+       23 +```bash                                                       
+       24 +make run                                                      
+       25 +# or                                                          
+       26 +python -m src.loop.run_simulation                             
+       27 +```                                                           
+       28 +Press `Ctrl+E` at any time to stop the simulation mid-run. The
+          + semantic log is preserved up to that point.                  
+       29 +                                                              
+       30 +**Replay a diagnostic log:**                                  
+       31 +```bash                                                       
+       32 +make viewer LOG=data/run_<timestamp>.json                     
+       33 +# or                                                          
+       34 +python -m src.cli.diagnostic_viewer --log-file data/run_<times
+          +tamp>.json                                                    
+       35 +```                                                           
+       36 +                                                              
+       37 +Options:                                                      
+       38 +- `--filter failures_only` — show only failed turns           
+       39 +- `--agent agent_a` or `--agent agent_b` — restrict output to 
+          +one agent                                                     
+       40 +                                                              
+       41 +**Run tests:**                                                
+       42 +```bash                                                       
+       43 +make test                                                     
+       44 +# or                                                          
+       45 +pytest                                                        
+       46 +```                                                           
+       47 +                                                              
+       48 +**Lint and format:**                                          
+       49 +```bash                                                       
+       50 +make lint      # ruff check .                                 
+       51 +make format    # ruff format .                                
+       52 +```                                                           
+       53 +                                                              
+       54 +## Project Structure                                          
+       55 +                                                              
+       56 +```                                                           
+       57 +dungeon-agents-sim/                                           
+       58 +├── docs/                                                     
+       59 +│   ├── DESIGN.md        # architecture, state model, key deci
+          +sions                                                         
+       60 +│   ├── features/        # one LLD file per feature           
+       61 +│   └── tasks/           # TASKS.md — task checklist          
+       62 +├── prompts/                                                  
+       63 +│   └── agent_system.md  # XML system prompt with {{PLACEHOLDE
+          +R}} variables                                                 
+       64 +├── src/                                                      
+       65 +│   ├── world/           # WorldState, CellType, procedural ge
+          +neration, BFS validation                                      
+       66 +│   ├── agents/          # AgentState, ToolDispatcher, LLMClie
+          +nt                                                            
+       67 +│   ├── loop/            # GameLoop orchestrator, end-conditio
+          +n checker, run_simulation entry point                         
+       68 +│   ├── tracing/         # SemanticLogger (crash-safe WIP writ
+          +es), Langfuse @observe wrapper                                
+       69 +│   └── cli/             # diagnostic_viewer.py, board_rendere
+          +r.py                                                          
+       70 +├── data/                # semantic logs — run_*.json (clean) 
+          +or run_wip_*.json (crash recovery)                            
+       71 +└── tests/               # pytest test suite                  
+       72 +```                                                           
+       73 +                                                              
+       74 +## How It Works                                               
+       75 +                                                              
+       76 +### Agents and State                                          
+       77 +                                                              
+       78 +Two agents (`agent_a`, `agent_b`) take turns on an 8×8 grid. E
+          +ach agent has a limited view — it only knows cells it has expl
+          +icitly observed. The simulation tracks four state layers:     
+       79 +                                                              
+       80 +| Layer | What it is |                                        
+       81 +|---|---|                                                     
+       82 +| **Ground Truth** | Authoritative `WorldState` — never passed
+          + to agents directly |                                         
+       83 +| **Shadow State** | Cells the agent has observed via tool cal
+          +ls — injected into the prompt |                               
+       84 +| **Agent Beliefs** | The agent's `expected_state` JSON — what
+          + it thinks will be true after acting |                        
+       85 +| **Agent Input** | Prompt context at decision time: inbox, re
+          +cent calls, last mistake, last known location |               
+       86 +                                                              
+       87 +The intentional lag between shadow state and ground truth is t
+          +he mechanism that produces observable state-desync bugs — the 
+          +core research output of this simulation.                      
+       88 +                                                              
+       89 +### Tools                                                     
+       90 +                                                              
+       91 +Agents call tools by responding in JSON: `{ "reasoning", "expe
+          +cted_state", "tool_name", "arguments" }`.                     
+       92 +                                                              
+       93 +Available tools: `move`, `look`, `pick_up`, `use_item`, `check
+          +_coordinates`, `check_inventory`, `send_message`.             
+       94 +                                                              
+       95 +- `check_coordinates` updates the agent's confirmed location i
+          +n the prompt                                                  
+       96 +- `send_message` puts a message in the partner's inbox (delive
+          +red after a one-turn delay)                                   
+       97 +                                                              
+       98 +### Semantic Log                                              
+       99 +                                                              
+      100 +After every agent action, a structured event is appended to `d
+          +ata/run_wip_*.json`. On clean exit it is renamed to `data/run_
+          +{run_id}_{timestamp}.json`. A crash leaves the WIP file intact
+          + and readable by the diagnostic viewer.                       
+      101 +                                                              
+      102 +Each event includes:                                          
+      103 +- The action taken and its spatial context                    
+      104 +- All four state layers at decision time                      
+      105 +- Computed deltas between `expected_state` and ground truth, c
+          +lassified as `fog_of_war`, `stale_shadow_state`, or `hallucina
+          +tion`                                                         
+      106 +                                                              
+      107 +### Diagnostic Viewer                                         
+      108 +                                                              
+      109 +The viewer replays a semantic log as a terminal timeline:     
+      110 +                                                              
+      111 +- **Successful turns** — dim single-line summary with Input (w
+          +hat the agent knew) and Output (reasoning) sections           
+      112 +- **Failed turns** — red `INCIDENT` panel with Input / Output 
+          +/ Result sections, including the error message and state desyn
+          +c diff                                                        
+      113 +                                                              
+      114 +Board is redrawn before each event from the `ground_truth` sna
+          +pshot.                                                        
+      115 +                                                              
+      116 +## Environment Variables                                      
+      117 +                                                              
+      118 +| Variable | Required | Description |                         
+      119 +|---|---|---|                                                 
+      120 +| `GOOGLE_API_KEY` | Yes | Google Generative AI API key |     
+      121 +| `GEMINI_MODEL` | No | Override model name (default: `gemma-4
+          +-31b-it`) |                                                   
+      122 +| `LANGFUSE_PUBLIC_KEY` | No | Langfuse public key — disabled 
+          +if absent |                                                   
+      123 +| `LANGFUSE_SECRET_KEY` | No | Langfuse secret key |          
+      124 +| `LANGFUSE_HOST` | No | Langfuse host URL (default: `cloud.la
+          +ngfuse.com`) |                                                
+
+● Now create the Makefile:
+
+● Bash(ls C:\Users\dharm\Storage\Work\Code\dungeon-agents-sim\)
+  ⎿  Error: Exit code 2
+     ls: cannot access 'C:UsersdharmStorageWorkCodedungeon-agents-sim\': No such
+      file or directory
+
+  Listed 1 directory (ctrl+o to expand)
+
+● Write(Makefile)
+  ⎿  User rejected write to Makefile
+       1 .DEFAULT_GOAL := help
+       2 
+       3 LOG ?=
+       4 
+       5 .PHONY: help run viewer test lint format
+       6 
+       7 help:
+       8        @echo "Usage:"
+       9        @echo "  make run            Run the simulation (Ctrl+E to stop 
+         mid-run)"
+      10        @echo "  make viewer LOG=<path>  Replay a semantic log in the te
+         rminal"
+     … +23 lines
+
+> In the make file include an option to clean up the data directory, and        
+  another option that would save a particular agent trace from data to          
+  saved_logs directory. This new directory will store simulation logs that will 
+   be used to display the functionality of this assignment.                     
+● Write(Makefile)
+  ⎿  Wrote 48 lines to Makefile
+       1 .DEFAULT_GOAL := help
+       2 
+       3 LOG ?=
+       4 
+       5 .PHONY: help run viewer test lint format clean save
+       6 
+       7 help:
+       8        @echo "Usage:"
+       9        @echo "  make run               Run the simulation (Ctrl+E to st
+
+         op mid-run)"
+      10        @echo "  make viewer LOG=<path> Replay a semantic log in the ter
+
+         minal"
+     … +38 lines (ctrl+o to expand)
+
+● Also add saved_logs/ to .gitignore so demo logs aren't accidentally committed
+  alongside run artifacts:
+
+  Searched for 1 pattern, read 1 file (ctrl+o to expand)
+
+● Update(.gitignore)
+  ⎿  Added 2 lines
+      209  
+      210  # Simulation run logs (keep folder via .gitkeep, ignore all lo
+           g files)
+      211  data/*.json
+      212 +                                                              
+      213 +# Saved demo logs are committed intentionally — do not add sav
+          +ed_logs/ here                                                 
+
+● Makefile is created with six targets:
+
+  - make run — runs the simulation
+  - make viewer LOG=<path> — replays a log in the terminal
+  - make test — runs pytest
+  - make lint / make format — ruff
+  - make clean — deletes all run_*.json and run_wip_*.json from data/
+  - make save LOG=<path> — copies a specific log to saved_logs/, creating the
+  directory if it doesn't exist
+
+  saved_logs/ is intentionally left out of .gitignore so demo logs can be
+  committed. A comment in .gitignore makes that decision explicit.
+
+> Commit the changes                                                            
+
+● Bash(cd "/c/Users/dharm/Storage/Work/Code/dungeon-agents-sim" && git status &&
+       git diff --stat)
+  ⎿  On branch main
+     Your branch is ahead of 'origin/main' by 13 commits.
+       (use "git push" to publish your local commits)
+     … +23 lines (ctrl+o to expand)
+
+● Bash(cd "/c/Users/dharm/Storage/Work/Code/dungeon-agents-sim" && git log
+      --oneline -5)
+  ⎿  5ab37f8 feat(viewer): add last_known_location to agent_input, Input/Ou
+     tput/Result sections, show error_message
+     2b98eb2 feat(tracing+viewer): sparse ground truth, agent_input in log
+     … +7 lines (ctrl+o to expand)
+
+● Bash(cd "/c/Users/dharm/Storage/Work/Code/dungeon-agents-sim" && git add
+      .gitignore README.md docs/DESIGN.md docs/features/cli-viewer.md
+      docs/features/tracing.md Mak…)
+  ⎿  warning: in the working copy of 'README.md', LF will be replaced by CR
+     LF the next time Git touches it
+     warning: in the working copy of 'docs/DESIGN.md', LF will be replaced
+     … +11 lines (ctrl+o to expand)
+
+● Committed as a25b734. 6 files changed: Makefile (new), README.md,
+  docs/DESIGN.md, docs/features/cli-viewer.md, docs/features/tracing.md,
+  .gitignore.

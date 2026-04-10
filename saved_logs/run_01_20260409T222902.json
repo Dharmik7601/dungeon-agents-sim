@@ -1,0 +1,2089 @@
+[
+  {
+    "event_id": "070cef36-7231-434e-8880-dd951392541b",
+    "timestamp": "2026-04-09T22:11:16.645473+00:00",
+    "turn_number": 0,
+    "agent_id": "agent_a",
+    "action": {
+      "tool_name": "check_coordinates",
+      "arguments": {},
+      "spatial_context": {
+        "agent_position": [
+          6,
+          4
+        ],
+        "target_position": [
+          6,
+          4
+        ]
+      }
+    },
+    "state_context": {
+      "agent_beliefs": {
+        "reasoning": "I need to establish my current coordinates to begin mapping the dungeon and coordinating with my partner agent.",
+        "expected_state": {}
+      },
+      "shadow_state": {},
+      "ground_truth": {
+        "grid_width": 8,
+        "grid_height": 8,
+        "cell_status_2_0": "wall",
+        "cell_status_6_1": "exit_locked",
+        "cell_status_3_2": "wall",
+        "cell_status_7_2": "wall",
+        "cell_status_7_3": "wall",
+        "cell_status_3_4": "wall",
+        "cell_status_0_5": "wall",
+        "cell_status_2_5": "wall",
+        "cell_status_1_6": "wall",
+        "cell_status_6_6": "key",
+        "cell_status_7_7": "wall",
+        "agent_a_position": [
+          6,
+          4
+        ],
+        "agent_b_position": [
+          2,
+          3
+        ]
+      },
+      "agent_input": {
+        "message_inbox": [],
+        "recent_calls": [],
+        "last_mistake": null,
+        "last_known_location": null
+      }
+    },
+    "execution_result": {
+      "status": "success",
+      "error_message": null,
+      "deltas": []
+    }
+  },
+  {
+    "event_id": "1cb0aa76-23b8-467a-907a-0c0e4d22cfad",
+    "timestamp": "2026-04-09T22:11:32.917968+00:00",
+    "turn_number": 0,
+    "agent_id": "agent_b",
+    "action": {
+      "tool_name": "look",
+      "arguments": {},
+      "spatial_context": {
+        "agent_position": [
+          2,
+          3
+        ],
+        "target_position": null
+      }
+    },
+    "state_context": {
+      "agent_beliefs": {
+        "reasoning": "I am starting at turn 0 with no knowledge of my surroundings. I will use the look tool to observe my current cell and adjacent cells to begin mapping the dungeon.",
+        "expected_state": {}
+      },
+      "shadow_state": {},
+      "ground_truth": {
+        "grid_width": 8,
+        "grid_height": 8,
+        "cell_status_2_0": "wall",
+        "cell_status_6_1": "exit_locked",
+        "cell_status_3_2": "wall",
+        "cell_status_7_2": "wall",
+        "cell_status_7_3": "wall",
+        "cell_status_3_4": "wall",
+        "cell_status_0_5": "wall",
+        "cell_status_2_5": "wall",
+        "cell_status_1_6": "wall",
+        "cell_status_6_6": "key",
+        "cell_status_7_7": "wall",
+        "agent_a_position": [
+          6,
+          4
+        ],
+        "agent_b_position": [
+          2,
+          3
+        ]
+      },
+      "agent_input": {
+        "message_inbox": [],
+        "recent_calls": [],
+        "last_mistake": null,
+        "last_known_location": null
+      }
+    },
+    "execution_result": {
+      "status": "success",
+      "error_message": null,
+      "deltas": []
+    }
+  },
+  {
+    "event_id": "cda1bfdb-54d1-4acd-a7f3-c8b73df6cd5f",
+    "timestamp": "2026-04-09T22:11:46.984664+00:00",
+    "turn_number": 1,
+    "agent_id": "agent_a",
+    "action": {
+      "tool_name": "look",
+      "arguments": {},
+      "spatial_context": {
+        "agent_position": [
+          6,
+          4
+        ],
+        "target_position": null
+      }
+    },
+    "state_context": {
+      "agent_beliefs": {
+        "reasoning": "I have just started at (6, 4) and have no information about the surrounding environment. I need to use the look tool to identify adjacent cells and any items or walls nearby to begin navigating toward the exit door.",
+        "expected_state": {
+          "cell_status_6_4": "empty"
+        }
+      },
+      "shadow_state": {
+        "cell_status_6_4": "empty"
+      },
+      "ground_truth": {
+        "grid_width": 8,
+        "grid_height": 8,
+        "cell_status_2_0": "wall",
+        "cell_status_6_1": "exit_locked",
+        "cell_status_3_2": "wall",
+        "cell_status_7_2": "wall",
+        "cell_status_7_3": "wall",
+        "cell_status_3_4": "wall",
+        "cell_status_0_5": "wall",
+        "cell_status_2_5": "wall",
+        "cell_status_1_6": "wall",
+        "cell_status_6_6": "key",
+        "cell_status_7_7": "wall",
+        "agent_a_position": [
+          6,
+          4
+        ],
+        "agent_b_position": [
+          2,
+          3
+        ]
+      },
+      "agent_input": {
+        "message_inbox": [],
+        "recent_calls": [
+          {
+            "tool_name": "check_coordinates",
+            "arguments": {},
+            "turn_number": 0
+          }
+        ],
+        "last_mistake": null,
+        "last_known_location": {
+          "position": [
+            6,
+            4
+          ],
+          "turn_number": 0
+        }
+      }
+    },
+    "execution_result": {
+      "status": "success",
+      "error_message": null,
+      "deltas": []
+    }
+  },
+  {
+    "event_id": "30424235-fcd8-43a5-9731-6a0bcd71636a",
+    "timestamp": "2026-04-09T22:12:14.732855+00:00",
+    "turn_number": 1,
+    "agent_id": "agent_b",
+    "action": {
+      "tool_name": "check_coordinates",
+      "arguments": {},
+      "spatial_context": {
+        "agent_position": [
+          2,
+          3
+        ],
+        "target_position": [
+          2,
+          3
+        ]
+      }
+    },
+    "state_context": {
+      "agent_beliefs": {
+        "reasoning": "I have performed a look action on turn 0, which revealed several empty cells around me, but my exact coordinates are currently unknown. I need to confirm my position to map the dungeon and coordinate with my partner.",
+        "expected_state": {}
+      },
+      "shadow_state": {
+        "cell_status_2_3": "empty",
+        "cell_status_2_2": "empty",
+        "cell_status_2_4": "empty",
+        "cell_status_3_3": "empty",
+        "cell_status_1_3": "empty"
+      },
+      "ground_truth": {
+        "grid_width": 8,
+        "grid_height": 8,
+        "cell_status_2_0": "wall",
+        "cell_status_6_1": "exit_locked",
+        "cell_status_3_2": "wall",
+        "cell_status_7_2": "wall",
+        "cell_status_7_3": "wall",
+        "cell_status_3_4": "wall",
+        "cell_status_0_5": "wall",
+        "cell_status_2_5": "wall",
+        "cell_status_1_6": "wall",
+        "cell_status_6_6": "key",
+        "cell_status_7_7": "wall",
+        "agent_a_position": [
+          6,
+          4
+        ],
+        "agent_b_position": [
+          2,
+          3
+        ]
+      },
+      "agent_input": {
+        "message_inbox": [],
+        "recent_calls": [
+          {
+            "tool_name": "look",
+            "arguments": {},
+            "turn_number": 0
+          }
+        ],
+        "last_mistake": null,
+        "last_known_location": null
+      }
+    },
+    "execution_result": {
+      "status": "success",
+      "error_message": null,
+      "deltas": []
+    }
+  },
+  {
+    "event_id": "abc2e72b-cba9-491a-add7-f315a1ff1472",
+    "timestamp": "2026-04-09T22:12:39.089477+00:00",
+    "turn_number": 2,
+    "agent_id": "agent_a",
+    "action": {
+      "tool_name": "move",
+      "arguments": {
+        "direction": "north"
+      },
+      "spatial_context": {
+        "agent_position": [
+          6,
+          3
+        ],
+        "target_position": [
+          6,
+          2
+        ]
+      }
+    },
+    "state_context": {
+      "agent_beliefs": {
+        "reasoning": "I have observed my immediate surroundings at (6, 4) and found that the adjacent cells (North, South, East, West) are all empty. To find the key or the door, I need to explore further. I will move North to (6, 3) to continue my search.",
+        "expected_state": {
+          "partner_position": [
+            6,
+            3
+          ]
+        }
+      },
+      "shadow_state": {
+        "cell_status_6_4": "empty",
+        "cell_status_6_3": "empty",
+        "cell_status_6_5": "empty",
+        "cell_status_7_4": "empty",
+        "cell_status_5_4": "empty"
+      },
+      "ground_truth": {
+        "grid_width": 8,
+        "grid_height": 8,
+        "cell_status_2_0": "wall",
+        "cell_status_6_1": "exit_locked",
+        "cell_status_3_2": "wall",
+        "cell_status_7_2": "wall",
+        "cell_status_7_3": "wall",
+        "cell_status_3_4": "wall",
+        "cell_status_0_5": "wall",
+        "cell_status_2_5": "wall",
+        "cell_status_1_6": "wall",
+        "cell_status_6_6": "key",
+        "cell_status_7_7": "wall",
+        "agent_a_position": [
+          6,
+          3
+        ],
+        "agent_b_position": [
+          2,
+          3
+        ]
+      },
+      "agent_input": {
+        "message_inbox": [],
+        "recent_calls": [
+          {
+            "tool_name": "check_coordinates",
+            "arguments": {},
+            "turn_number": 0
+          },
+          {
+            "tool_name": "look",
+            "arguments": {},
+            "turn_number": 1
+          }
+        ],
+        "last_mistake": null,
+        "last_known_location": {
+          "position": [
+            6,
+            4
+          ],
+          "turn_number": 0
+        }
+      }
+    },
+    "execution_result": {
+      "status": "success",
+      "error_message": null,
+      "deltas": []
+    }
+  },
+  {
+    "event_id": "58873bf2-4b62-4a70-af44-3f3dac82032d",
+    "timestamp": "2026-04-09T22:13:13.207256+00:00",
+    "turn_number": 2,
+    "agent_id": "agent_b",
+    "action": {
+      "tool_name": "move",
+      "arguments": {
+        "direction": "north"
+      },
+      "spatial_context": {
+        "agent_position": [
+          2,
+          2
+        ],
+        "target_position": [
+          2,
+          1
+        ]
+      }
+    },
+    "state_context": {
+      "agent_beliefs": {
+        "reasoning": "I have confirmed my location at (2, 3) and observed that the immediate surrounding cells are empty. To find the key and the exit door, I need to explore the dungeon. I will move north to cell (2, 4).",
+        "expected_state": {
+          "cell_status_2_4": "empty"
+        }
+      },
+      "shadow_state": {
+        "cell_status_2_3": "empty",
+        "cell_status_2_2": "empty",
+        "cell_status_2_4": "empty",
+        "cell_status_3_3": "empty",
+        "cell_status_1_3": "empty"
+      },
+      "ground_truth": {
+        "grid_width": 8,
+        "grid_height": 8,
+        "cell_status_2_0": "wall",
+        "cell_status_6_1": "exit_locked",
+        "cell_status_3_2": "wall",
+        "cell_status_7_2": "wall",
+        "cell_status_7_3": "wall",
+        "cell_status_3_4": "wall",
+        "cell_status_0_5": "wall",
+        "cell_status_2_5": "wall",
+        "cell_status_1_6": "wall",
+        "cell_status_6_6": "key",
+        "cell_status_7_7": "wall",
+        "agent_a_position": [
+          6,
+          3
+        ],
+        "agent_b_position": [
+          2,
+          2
+        ]
+      },
+      "agent_input": {
+        "message_inbox": [],
+        "recent_calls": [
+          {
+            "tool_name": "look",
+            "arguments": {},
+            "turn_number": 0
+          },
+          {
+            "tool_name": "check_coordinates",
+            "arguments": {},
+            "turn_number": 1
+          }
+        ],
+        "last_mistake": null,
+        "last_known_location": {
+          "position": [
+            2,
+            3
+          ],
+          "turn_number": 1
+        }
+      }
+    },
+    "execution_result": {
+      "status": "success",
+      "error_message": null,
+      "deltas": []
+    }
+  },
+  {
+    "event_id": "0687701d-41b9-4951-ac3d-fb510edfdd89",
+    "timestamp": "2026-04-09T22:13:38.612507+00:00",
+    "turn_number": 3,
+    "agent_id": "agent_a",
+    "action": {
+      "tool_name": "look",
+      "arguments": {},
+      "spatial_context": {
+        "agent_position": [
+          6,
+          3
+        ],
+        "target_position": null
+      }
+    },
+    "state_context": {
+      "agent_beliefs": {
+        "reasoning": "I moved north from (6, 4) to (6, 5) on turn 2. I now need to observe my current cell and its adjacent cells to update my map and search for the key or the door.",
+        "expected_state": {
+          "cell_status_6_6": "unexplored",
+          "cell_status_6_4": "empty",
+          "cell_status_7_5": "unexplored",
+          "cell_status_5_5": "unexplored"
+        }
+      },
+      "shadow_state": {
+        "cell_status_6_4": "empty",
+        "cell_status_6_3": "empty",
+        "cell_status_6_5": "empty",
+        "cell_status_7_4": "empty",
+        "cell_status_5_4": "empty"
+      },
+      "ground_truth": {
+        "grid_width": 8,
+        "grid_height": 8,
+        "cell_status_2_0": "wall",
+        "cell_status_6_1": "exit_locked",
+        "cell_status_3_2": "wall",
+        "cell_status_7_2": "wall",
+        "cell_status_7_3": "wall",
+        "cell_status_3_4": "wall",
+        "cell_status_0_5": "wall",
+        "cell_status_2_5": "wall",
+        "cell_status_1_6": "wall",
+        "cell_status_6_6": "key",
+        "cell_status_7_7": "wall",
+        "agent_a_position": [
+          6,
+          3
+        ],
+        "agent_b_position": [
+          2,
+          2
+        ]
+      },
+      "agent_input": {
+        "message_inbox": [],
+        "recent_calls": [
+          {
+            "tool_name": "check_coordinates",
+            "arguments": {},
+            "turn_number": 0
+          },
+          {
+            "tool_name": "look",
+            "arguments": {},
+            "turn_number": 1
+          },
+          {
+            "tool_name": "move",
+            "arguments": {
+              "direction": "north"
+            },
+            "turn_number": 2
+          }
+        ],
+        "last_mistake": null,
+        "last_known_location": {
+          "position": [
+            6,
+            4
+          ],
+          "turn_number": 0
+        }
+      }
+    },
+    "execution_result": {
+      "status": "success",
+      "error_message": null,
+      "deltas": []
+    }
+  },
+  {
+    "event_id": "6f45e82d-ea7b-4040-8004-ff2b49826305",
+    "timestamp": "2026-04-09T22:13:59.644143+00:00",
+    "turn_number": 3,
+    "agent_id": "agent_b",
+    "action": {
+      "tool_name": "look",
+      "arguments": {},
+      "spatial_context": {
+        "agent_position": [
+          2,
+          2
+        ],
+        "target_position": null
+      }
+    },
+    "state_context": {
+      "agent_beliefs": {
+        "reasoning": "I moved north in the previous turn, which should place me at (2, 4). I need to use the look tool to update my map of the current cell and its neighbors to search for the key or the exit door.",
+        "expected_state": {
+          "cell_status_2_4": "empty"
+        }
+      },
+      "shadow_state": {
+        "cell_status_2_3": "empty",
+        "cell_status_2_2": "empty",
+        "cell_status_2_4": "empty",
+        "cell_status_3_3": "empty",
+        "cell_status_1_3": "empty"
+      },
+      "ground_truth": {
+        "grid_width": 8,
+        "grid_height": 8,
+        "cell_status_2_0": "wall",
+        "cell_status_6_1": "exit_locked",
+        "cell_status_3_2": "wall",
+        "cell_status_7_2": "wall",
+        "cell_status_7_3": "wall",
+        "cell_status_3_4": "wall",
+        "cell_status_0_5": "wall",
+        "cell_status_2_5": "wall",
+        "cell_status_1_6": "wall",
+        "cell_status_6_6": "key",
+        "cell_status_7_7": "wall",
+        "agent_a_position": [
+          6,
+          3
+        ],
+        "agent_b_position": [
+          2,
+          2
+        ]
+      },
+      "agent_input": {
+        "message_inbox": [],
+        "recent_calls": [
+          {
+            "tool_name": "look",
+            "arguments": {},
+            "turn_number": 0
+          },
+          {
+            "tool_name": "check_coordinates",
+            "arguments": {},
+            "turn_number": 1
+          },
+          {
+            "tool_name": "move",
+            "arguments": {
+              "direction": "north"
+            },
+            "turn_number": 2
+          }
+        ],
+        "last_mistake": null,
+        "last_known_location": {
+          "position": [
+            2,
+            3
+          ],
+          "turn_number": 1
+        }
+      }
+    },
+    "execution_result": {
+      "status": "success",
+      "error_message": null,
+      "deltas": []
+    }
+  },
+  {
+    "event_id": "4564e66a-3ad5-4598-bc91-fcabd336980d",
+    "timestamp": "2026-04-09T22:14:27.292135+00:00",
+    "turn_number": 4,
+    "agent_id": "agent_a",
+    "action": {
+      "tool_name": "move",
+      "arguments": {
+        "direction": "north"
+      },
+      "spatial_context": {
+        "agent_position": [
+          6,
+          2
+        ],
+        "target_position": [
+          6,
+          1
+        ]
+      }
+    },
+    "state_context": {
+      "agent_beliefs": {
+        "reasoning": "I am currently at (6, 3) based on my movement from (6, 4) on turn 2. I have already looked around my current cell. To continue exploring the dungeon for the key and the exit door, I will move north to cell (6, 2).",
+        "expected_state": {
+          "cell_status_6_2": "empty"
+        }
+      },
+      "shadow_state": {
+        "cell_status_6_4": "empty",
+        "cell_status_6_3": "empty",
+        "cell_status_6_5": "empty",
+        "cell_status_7_4": "empty",
+        "cell_status_5_4": "empty",
+        "cell_status_6_2": "empty",
+        "cell_status_7_3": "wall",
+        "cell_status_5_3": "empty"
+      },
+      "ground_truth": {
+        "grid_width": 8,
+        "grid_height": 8,
+        "cell_status_2_0": "wall",
+        "cell_status_6_1": "exit_locked",
+        "cell_status_3_2": "wall",
+        "cell_status_7_2": "wall",
+        "cell_status_7_3": "wall",
+        "cell_status_3_4": "wall",
+        "cell_status_0_5": "wall",
+        "cell_status_2_5": "wall",
+        "cell_status_1_6": "wall",
+        "cell_status_6_6": "key",
+        "cell_status_7_7": "wall",
+        "agent_a_position": [
+          6,
+          2
+        ],
+        "agent_b_position": [
+          2,
+          2
+        ]
+      },
+      "agent_input": {
+        "message_inbox": [],
+        "recent_calls": [
+          {
+            "tool_name": "check_coordinates",
+            "arguments": {},
+            "turn_number": 0
+          },
+          {
+            "tool_name": "look",
+            "arguments": {},
+            "turn_number": 1
+          },
+          {
+            "tool_name": "move",
+            "arguments": {
+              "direction": "north"
+            },
+            "turn_number": 2
+          },
+          {
+            "tool_name": "look",
+            "arguments": {},
+            "turn_number": 3
+          }
+        ],
+        "last_mistake": null,
+        "last_known_location": {
+          "position": [
+            6,
+            4
+          ],
+          "turn_number": 0
+        }
+      }
+    },
+    "execution_result": {
+      "status": "success",
+      "error_message": null,
+      "deltas": []
+    }
+  },
+  {
+    "event_id": "8d514ff6-c950-4302-ac04-cf4fedf02057",
+    "timestamp": "2026-04-09T22:15:40.441534+00:00",
+    "turn_number": 4,
+    "agent_id": "agent_b",
+    "action": {
+      "tool_name": "move",
+      "arguments": {
+        "direction": "north"
+      },
+      "spatial_context": {
+        "agent_position": [
+          2,
+          1
+        ],
+        "target_position": [
+          2,
+          0
+        ]
+      }
+    },
+    "state_context": {
+      "agent_beliefs": {
+        "reasoning": "I am currently at (2, 4) after moving North from (2, 3) and performing a look action. Since no items or doors were discovered in my immediate vicinity, I will continue exploring by moving further North to (2, 5).",
+        "expected_state": {
+          "cell_status_2_5": "empty"
+        }
+      },
+      "shadow_state": {
+        "cell_status_2_3": "empty",
+        "cell_status_2_2": "empty",
+        "cell_status_2_4": "empty",
+        "cell_status_3_3": "empty",
+        "cell_status_1_3": "empty",
+        "cell_status_2_1": "empty",
+        "cell_status_3_2": "wall",
+        "cell_status_1_2": "empty"
+      },
+      "ground_truth": {
+        "grid_width": 8,
+        "grid_height": 8,
+        "cell_status_2_0": "wall",
+        "cell_status_6_1": "exit_locked",
+        "cell_status_3_2": "wall",
+        "cell_status_7_2": "wall",
+        "cell_status_7_3": "wall",
+        "cell_status_3_4": "wall",
+        "cell_status_0_5": "wall",
+        "cell_status_2_5": "wall",
+        "cell_status_1_6": "wall",
+        "cell_status_6_6": "key",
+        "cell_status_7_7": "wall",
+        "agent_a_position": [
+          6,
+          2
+        ],
+        "agent_b_position": [
+          2,
+          1
+        ]
+      },
+      "agent_input": {
+        "message_inbox": [],
+        "recent_calls": [
+          {
+            "tool_name": "look",
+            "arguments": {},
+            "turn_number": 0
+          },
+          {
+            "tool_name": "check_coordinates",
+            "arguments": {},
+            "turn_number": 1
+          },
+          {
+            "tool_name": "move",
+            "arguments": {
+              "direction": "north"
+            },
+            "turn_number": 2
+          },
+          {
+            "tool_name": "look",
+            "arguments": {},
+            "turn_number": 3
+          }
+        ],
+        "last_mistake": null,
+        "last_known_location": {
+          "position": [
+            2,
+            3
+          ],
+          "turn_number": 1
+        }
+      }
+    },
+    "execution_result": {
+      "status": "success",
+      "error_message": null,
+      "deltas": [
+        {
+          "property_key": "cell_status_2_5",
+          "expected_value": "empty",
+          "actual_value": "wall",
+          "discrepancy_source": "fog_of_war"
+        }
+      ]
+    }
+  },
+  {
+    "event_id": "a49a3e37-79b6-4b2f-bd00-3a2fb6713dd4",
+    "timestamp": "2026-04-09T22:16:00.405345+00:00",
+    "turn_number": 5,
+    "agent_id": "agent_a",
+    "action": {
+      "tool_name": "look",
+      "arguments": {},
+      "spatial_context": {
+        "agent_position": [
+          6,
+          2
+        ],
+        "target_position": null
+      }
+    },
+    "state_context": {
+      "agent_beliefs": {
+        "reasoning": "I have moved north twice from (6, 4), placing me at (6, 2). I need to observe my current surroundings to identify any items, walls, or the exit door.",
+        "expected_state": {
+          "cell_status_6_2": "empty",
+          "cell_status_6_1": "unexplored",
+          "cell_status_6_3": "empty",
+          "cell_status_5_2": "unexplored",
+          "cell_status_7_2": "unexplored"
+        }
+      },
+      "shadow_state": {
+        "cell_status_6_4": "empty",
+        "cell_status_6_3": "empty",
+        "cell_status_6_5": "empty",
+        "cell_status_7_4": "empty",
+        "cell_status_5_4": "empty",
+        "cell_status_6_2": "empty",
+        "cell_status_7_3": "wall",
+        "cell_status_5_3": "empty"
+      },
+      "ground_truth": {
+        "grid_width": 8,
+        "grid_height": 8,
+        "cell_status_2_0": "wall",
+        "cell_status_6_1": "exit_locked",
+        "cell_status_3_2": "wall",
+        "cell_status_7_2": "wall",
+        "cell_status_7_3": "wall",
+        "cell_status_3_4": "wall",
+        "cell_status_0_5": "wall",
+        "cell_status_2_5": "wall",
+        "cell_status_1_6": "wall",
+        "cell_status_6_6": "key",
+        "cell_status_7_7": "wall",
+        "agent_a_position": [
+          6,
+          2
+        ],
+        "agent_b_position": [
+          2,
+          1
+        ]
+      },
+      "agent_input": {
+        "message_inbox": [],
+        "recent_calls": [
+          {
+            "tool_name": "check_coordinates",
+            "arguments": {},
+            "turn_number": 0
+          },
+          {
+            "tool_name": "look",
+            "arguments": {},
+            "turn_number": 1
+          },
+          {
+            "tool_name": "move",
+            "arguments": {
+              "direction": "north"
+            },
+            "turn_number": 2
+          },
+          {
+            "tool_name": "look",
+            "arguments": {},
+            "turn_number": 3
+          },
+          {
+            "tool_name": "move",
+            "arguments": {
+              "direction": "north"
+            },
+            "turn_number": 4
+          }
+        ],
+        "last_mistake": null,
+        "last_known_location": {
+          "position": [
+            6,
+            4
+          ],
+          "turn_number": 0
+        }
+      }
+    },
+    "execution_result": {
+      "status": "success",
+      "error_message": null,
+      "deltas": []
+    }
+  },
+  {
+    "event_id": "7a7ff7cb-956f-4605-97e3-14d31287c963",
+    "timestamp": "2026-04-09T22:17:13.947447+00:00",
+    "turn_number": 5,
+    "agent_id": "agent_b",
+    "action": {
+      "tool_name": "look",
+      "arguments": {},
+      "spatial_context": {
+        "agent_position": [
+          2,
+          1
+        ],
+        "target_position": null
+      }
+    },
+    "state_context": {
+      "agent_beliefs": {
+        "reasoning": "Based on the known map and my movements, I started at (2, 3). Moving north on turn 2 brought me to (2, 2), and the look() on turn 3 confirmed cells around (2, 2) (specifically (2, 1), (1, 2), and (3, 2)). Moving north again on turn 4 brought me to (2, 1). I will now use look() to observe my current cell (2, 1) and its immediate neighbors to search for the key or the exit door.",
+        "expected_state": {
+          "cell_status_2_1": "empty",
+          "cell_status_2_0": "unexplored",
+          "cell_status_1_1": "unexplored",
+          "cell_status_3_1": "unexplored"
+        }
+      },
+      "shadow_state": {
+        "cell_status_2_3": "empty",
+        "cell_status_2_2": "empty",
+        "cell_status_2_4": "empty",
+        "cell_status_3_3": "empty",
+        "cell_status_1_3": "empty",
+        "cell_status_2_1": "empty",
+        "cell_status_3_2": "wall",
+        "cell_status_1_2": "empty"
+      },
+      "ground_truth": {
+        "grid_width": 8,
+        "grid_height": 8,
+        "cell_status_2_0": "wall",
+        "cell_status_6_1": "exit_locked",
+        "cell_status_3_2": "wall",
+        "cell_status_7_2": "wall",
+        "cell_status_7_3": "wall",
+        "cell_status_3_4": "wall",
+        "cell_status_0_5": "wall",
+        "cell_status_2_5": "wall",
+        "cell_status_1_6": "wall",
+        "cell_status_6_6": "key",
+        "cell_status_7_7": "wall",
+        "agent_a_position": [
+          6,
+          2
+        ],
+        "agent_b_position": [
+          2,
+          1
+        ]
+      },
+      "agent_input": {
+        "message_inbox": [],
+        "recent_calls": [
+          {
+            "tool_name": "look",
+            "arguments": {},
+            "turn_number": 0
+          },
+          {
+            "tool_name": "check_coordinates",
+            "arguments": {},
+            "turn_number": 1
+          },
+          {
+            "tool_name": "move",
+            "arguments": {
+              "direction": "north"
+            },
+            "turn_number": 2
+          },
+          {
+            "tool_name": "look",
+            "arguments": {},
+            "turn_number": 3
+          },
+          {
+            "tool_name": "move",
+            "arguments": {
+              "direction": "north"
+            },
+            "turn_number": 4
+          }
+        ],
+        "last_mistake": null,
+        "last_known_location": {
+          "position": [
+            2,
+            3
+          ],
+          "turn_number": 1
+        }
+      }
+    },
+    "execution_result": {
+      "status": "success",
+      "error_message": null,
+      "deltas": []
+    }
+  },
+  {
+    "event_id": "a9fc3fd8-54fb-43a0-be53-dc5b5dfdc978",
+    "timestamp": "2026-04-09T22:19:04.453176+00:00",
+    "turn_number": 6,
+    "agent_id": "agent_a",
+    "action": {
+      "tool_name": "check_coordinates",
+      "arguments": {},
+      "spatial_context": {
+        "agent_position": [
+          6,
+          2
+        ],
+        "target_position": [
+          6,
+          2
+        ]
+      }
+    },
+    "state_context": {
+      "agent_beliefs": {
+        "reasoning": "I have moved north twice from my starting position at (6, 4), but the shadow state of the map does not reflect the cells I should have encountered if North corresponds to a decrease in the x-coordinate (Row). To avoid further disorientation and to plan a precise route to the locked exit at (6, 1), I need to confirm my exact current coordinates.",
+        "expected_state": {
+          "partner_position": [
+            0,
+            0
+          ]
+        }
+      },
+      "shadow_state": {
+        "cell_status_6_4": "empty",
+        "cell_status_6_3": "empty",
+        "cell_status_6_5": "empty",
+        "cell_status_7_4": "empty",
+        "cell_status_5_4": "empty",
+        "cell_status_6_2": "empty",
+        "cell_status_7_3": "wall",
+        "cell_status_5_3": "empty",
+        "cell_status_6_1": "exit_locked",
+        "cell_status_7_2": "wall",
+        "cell_status_5_2": "empty"
+      },
+      "ground_truth": {
+        "grid_width": 8,
+        "grid_height": 8,
+        "cell_status_2_0": "wall",
+        "cell_status_6_1": "exit_locked",
+        "cell_status_3_2": "wall",
+        "cell_status_7_2": "wall",
+        "cell_status_7_3": "wall",
+        "cell_status_3_4": "wall",
+        "cell_status_0_5": "wall",
+        "cell_status_2_5": "wall",
+        "cell_status_1_6": "wall",
+        "cell_status_6_6": "key",
+        "cell_status_7_7": "wall",
+        "agent_a_position": [
+          6,
+          2
+        ],
+        "agent_b_position": [
+          2,
+          1
+        ]
+      },
+      "agent_input": {
+        "message_inbox": [],
+        "recent_calls": [
+          {
+            "tool_name": "look",
+            "arguments": {},
+            "turn_number": 1
+          },
+          {
+            "tool_name": "move",
+            "arguments": {
+              "direction": "north"
+            },
+            "turn_number": 2
+          },
+          {
+            "tool_name": "look",
+            "arguments": {},
+            "turn_number": 3
+          },
+          {
+            "tool_name": "move",
+            "arguments": {
+              "direction": "north"
+            },
+            "turn_number": 4
+          },
+          {
+            "tool_name": "look",
+            "arguments": {},
+            "turn_number": 5
+          }
+        ],
+        "last_mistake": null,
+        "last_known_location": {
+          "position": [
+            6,
+            4
+          ],
+          "turn_number": 0
+        }
+      }
+    },
+    "execution_result": {
+      "status": "success",
+      "error_message": null,
+      "deltas": []
+    }
+  },
+  {
+    "event_id": "5f5238b2-155b-4631-b23d-72d0618eca97",
+    "timestamp": "2026-04-09T22:21:27.770261+00:00",
+    "turn_number": 6,
+    "agent_id": "agent_b",
+    "action": {
+      "tool_name": "move",
+      "arguments": {
+        "direction": "west"
+      },
+      "spatial_context": {
+        "agent_position": [
+          1,
+          1
+        ],
+        "target_position": [
+          0,
+          1
+        ]
+      }
+    },
+    "state_context": {
+      "agent_beliefs": {
+        "reasoning": "Based on the movement history and the known map, I have determined that moving 'north' decreases the second coordinate (column). From (2, 3), moving 'north' twice brought me to (2, 2) and then (2, 1). At (2, 1), the cell to the 'north' (2, 0) is a wall. I will now move 'west' (which decreases the first coordinate, the row) to (1, 1) to continue exploring the dungeon.",
+        "expected_state": {
+          "cell_status_1_1": "empty"
+        }
+      },
+      "shadow_state": {
+        "cell_status_2_3": "empty",
+        "cell_status_2_2": "empty",
+        "cell_status_2_4": "empty",
+        "cell_status_3_3": "empty",
+        "cell_status_1_3": "empty",
+        "cell_status_2_1": "empty",
+        "cell_status_3_2": "wall",
+        "cell_status_1_2": "empty",
+        "cell_status_2_0": "wall",
+        "cell_status_3_1": "empty",
+        "cell_status_1_1": "empty"
+      },
+      "ground_truth": {
+        "grid_width": 8,
+        "grid_height": 8,
+        "cell_status_2_0": "wall",
+        "cell_status_6_1": "exit_locked",
+        "cell_status_3_2": "wall",
+        "cell_status_7_2": "wall",
+        "cell_status_7_3": "wall",
+        "cell_status_3_4": "wall",
+        "cell_status_0_5": "wall",
+        "cell_status_2_5": "wall",
+        "cell_status_1_6": "wall",
+        "cell_status_6_6": "key",
+        "cell_status_7_7": "wall",
+        "agent_a_position": [
+          6,
+          2
+        ],
+        "agent_b_position": [
+          1,
+          1
+        ]
+      },
+      "agent_input": {
+        "message_inbox": [],
+        "recent_calls": [
+          {
+            "tool_name": "check_coordinates",
+            "arguments": {},
+            "turn_number": 1
+          },
+          {
+            "tool_name": "move",
+            "arguments": {
+              "direction": "north"
+            },
+            "turn_number": 2
+          },
+          {
+            "tool_name": "look",
+            "arguments": {},
+            "turn_number": 3
+          },
+          {
+            "tool_name": "move",
+            "arguments": {
+              "direction": "north"
+            },
+            "turn_number": 4
+          },
+          {
+            "tool_name": "look",
+            "arguments": {},
+            "turn_number": 5
+          }
+        ],
+        "last_mistake": null,
+        "last_known_location": {
+          "position": [
+            2,
+            3
+          ],
+          "turn_number": 1
+        }
+      }
+    },
+    "execution_result": {
+      "status": "success",
+      "error_message": null,
+      "deltas": []
+    }
+  },
+  {
+    "event_id": "636f8adf-bdab-494d-8a26-8c713c87a589",
+    "timestamp": "2026-04-09T22:22:45.873043+00:00",
+    "turn_number": 7,
+    "agent_id": "agent_a",
+    "action": {
+      "tool_name": "move",
+      "arguments": {
+        "direction": "east"
+      },
+      "spatial_context": {
+        "agent_position": [
+          6,
+          2
+        ],
+        "target_position": [
+          7,
+          2
+        ]
+      }
+    },
+    "state_context": {
+      "agent_beliefs": {
+        "reasoning": "I am currently at (6, 2), and I know the locked exit is located at (6, 1). Since I do not have the key in my inventory, I must explore the surrounding area to find it. I will move east to (6, 3) to continue exploring the dungeon.",
+        "expected_state": {
+          "cell_status_6_3": "empty"
+        }
+      },
+      "shadow_state": {
+        "cell_status_6_4": "empty",
+        "cell_status_6_3": "empty",
+        "cell_status_6_5": "empty",
+        "cell_status_7_4": "empty",
+        "cell_status_5_4": "empty",
+        "cell_status_6_2": "empty",
+        "cell_status_7_3": "wall",
+        "cell_status_5_3": "empty",
+        "cell_status_6_1": "exit_locked",
+        "cell_status_7_2": "wall",
+        "cell_status_5_2": "empty"
+      },
+      "ground_truth": {
+        "grid_width": 8,
+        "grid_height": 8,
+        "cell_status_2_0": "wall",
+        "cell_status_6_1": "exit_locked",
+        "cell_status_3_2": "wall",
+        "cell_status_7_2": "wall",
+        "cell_status_7_3": "wall",
+        "cell_status_3_4": "wall",
+        "cell_status_0_5": "wall",
+        "cell_status_2_5": "wall",
+        "cell_status_1_6": "wall",
+        "cell_status_6_6": "key",
+        "cell_status_7_7": "wall",
+        "agent_a_position": [
+          6,
+          2
+        ],
+        "agent_b_position": [
+          1,
+          1
+        ]
+      },
+      "agent_input": {
+        "message_inbox": [],
+        "recent_calls": [
+          {
+            "tool_name": "move",
+            "arguments": {
+              "direction": "north"
+            },
+            "turn_number": 2
+          },
+          {
+            "tool_name": "look",
+            "arguments": {},
+            "turn_number": 3
+          },
+          {
+            "tool_name": "move",
+            "arguments": {
+              "direction": "north"
+            },
+            "turn_number": 4
+          },
+          {
+            "tool_name": "look",
+            "arguments": {},
+            "turn_number": 5
+          },
+          {
+            "tool_name": "check_coordinates",
+            "arguments": {},
+            "turn_number": 6
+          }
+        ],
+        "last_mistake": null,
+        "last_known_location": {
+          "position": [
+            6,
+            2
+          ],
+          "turn_number": 6
+        }
+      }
+    },
+    "execution_result": {
+      "status": "failure",
+      "error_message": "Cannot move east: wall",
+      "deltas": []
+    }
+  },
+  {
+    "event_id": "372d533b-e5ad-4b12-9899-4f8f527cbbbe",
+    "timestamp": "2026-04-09T22:23:10.184015+00:00",
+    "turn_number": 7,
+    "agent_id": "agent_b",
+    "action": {
+      "tool_name": "look",
+      "arguments": {},
+      "spatial_context": {
+        "agent_position": [
+          1,
+          1
+        ],
+        "target_position": null
+      }
+    },
+    "state_context": {
+      "agent_beliefs": {
+        "reasoning": "I have moved from (2, 3) north twice and then west once. Based on my tracking, I should now be at (1, 5). I need to perform a look() action to update my map of the current cell and its surroundings to identify any items or the exit door.",
+        "expected_state": {
+          "cell_status_1_5": "empty"
+        }
+      },
+      "shadow_state": {
+        "cell_status_2_3": "empty",
+        "cell_status_2_2": "empty",
+        "cell_status_2_4": "empty",
+        "cell_status_3_3": "empty",
+        "cell_status_1_3": "empty",
+        "cell_status_2_1": "empty",
+        "cell_status_3_2": "wall",
+        "cell_status_1_2": "empty",
+        "cell_status_2_0": "wall",
+        "cell_status_3_1": "empty",
+        "cell_status_1_1": "empty"
+      },
+      "ground_truth": {
+        "grid_width": 8,
+        "grid_height": 8,
+        "cell_status_2_0": "wall",
+        "cell_status_6_1": "exit_locked",
+        "cell_status_3_2": "wall",
+        "cell_status_7_2": "wall",
+        "cell_status_7_3": "wall",
+        "cell_status_3_4": "wall",
+        "cell_status_0_5": "wall",
+        "cell_status_2_5": "wall",
+        "cell_status_1_6": "wall",
+        "cell_status_6_6": "key",
+        "cell_status_7_7": "wall",
+        "agent_a_position": [
+          6,
+          2
+        ],
+        "agent_b_position": [
+          1,
+          1
+        ]
+      },
+      "agent_input": {
+        "message_inbox": [],
+        "recent_calls": [
+          {
+            "tool_name": "move",
+            "arguments": {
+              "direction": "north"
+            },
+            "turn_number": 2
+          },
+          {
+            "tool_name": "look",
+            "arguments": {},
+            "turn_number": 3
+          },
+          {
+            "tool_name": "move",
+            "arguments": {
+              "direction": "north"
+            },
+            "turn_number": 4
+          },
+          {
+            "tool_name": "look",
+            "arguments": {},
+            "turn_number": 5
+          },
+          {
+            "tool_name": "move",
+            "arguments": {
+              "direction": "west"
+            },
+            "turn_number": 6
+          }
+        ],
+        "last_mistake": null,
+        "last_known_location": {
+          "position": [
+            2,
+            3
+          ],
+          "turn_number": 1
+        }
+      }
+    },
+    "execution_result": {
+      "status": "success",
+      "error_message": null,
+      "deltas": []
+    }
+  },
+  {
+    "event_id": "9d00fe4c-728d-41b5-b401-1eed5d6b6419",
+    "timestamp": "2026-04-09T22:24:42.559427+00:00",
+    "turn_number": 8,
+    "agent_id": "agent_a",
+    "action": {
+      "tool_name": "move",
+      "arguments": {
+        "direction": "north"
+      },
+      "spatial_context": {
+        "agent_position": [
+          6,
+          1
+        ],
+        "target_position": [
+          6,
+          0
+        ]
+      }
+    },
+    "state_context": {
+      "agent_beliefs": {
+        "reasoning": "I am currently at (6, 2). I attempted to move east on turn 7 and hit a wall, which contradicts the shadow state mapping (6, 3) as empty. Therefore, (6, 3) is actually a wall. The exit is to the west at (6, 1) but is locked. I need to find the key. Based on the known map, there are empty cells to the north (5, 2) and potentially further east in the 5th row (5, 3, 5, 4) which may lead to other unexplored areas. I will move north to (5, 2) to begin exploring that path.",
+        "expected_state": {
+          "cell_status_5_2": "empty"
+        }
+      },
+      "shadow_state": {
+        "cell_status_6_4": "empty",
+        "cell_status_6_3": "empty",
+        "cell_status_6_5": "empty",
+        "cell_status_7_4": "empty",
+        "cell_status_5_4": "empty",
+        "cell_status_6_2": "empty",
+        "cell_status_7_3": "wall",
+        "cell_status_5_3": "empty",
+        "cell_status_6_1": "exit_locked",
+        "cell_status_7_2": "wall",
+        "cell_status_5_2": "empty"
+      },
+      "ground_truth": {
+        "grid_width": 8,
+        "grid_height": 8,
+        "cell_status_2_0": "wall",
+        "cell_status_6_1": "exit_locked",
+        "cell_status_3_2": "wall",
+        "cell_status_7_2": "wall",
+        "cell_status_7_3": "wall",
+        "cell_status_3_4": "wall",
+        "cell_status_0_5": "wall",
+        "cell_status_2_5": "wall",
+        "cell_status_1_6": "wall",
+        "cell_status_6_6": "key",
+        "cell_status_7_7": "wall",
+        "agent_a_position": [
+          6,
+          1
+        ],
+        "agent_b_position": [
+          1,
+          1
+        ]
+      },
+      "agent_input": {
+        "message_inbox": [],
+        "recent_calls": [
+          {
+            "tool_name": "look",
+            "arguments": {},
+            "turn_number": 3
+          },
+          {
+            "tool_name": "move",
+            "arguments": {
+              "direction": "north"
+            },
+            "turn_number": 4
+          },
+          {
+            "tool_name": "look",
+            "arguments": {},
+            "turn_number": 5
+          },
+          {
+            "tool_name": "check_coordinates",
+            "arguments": {},
+            "turn_number": 6
+          },
+          {
+            "tool_name": "move",
+            "arguments": {
+              "direction": "east"
+            },
+            "turn_number": 7
+          }
+        ],
+        "last_mistake": {
+          "tool_name": "move",
+          "turn_number": 7,
+          "reason": "Cannot move east: wall"
+        },
+        "last_known_location": {
+          "position": [
+            6,
+            2
+          ],
+          "turn_number": 6
+        }
+      }
+    },
+    "execution_result": {
+      "status": "success",
+      "error_message": null,
+      "deltas": []
+    }
+  },
+  {
+    "event_id": "d47a51f5-248a-4d0d-8797-91a89ccb442e",
+    "timestamp": "2026-04-09T22:25:26.466792+00:00",
+    "turn_number": 8,
+    "agent_id": "agent_b",
+    "action": {
+      "tool_name": "move",
+      "arguments": {
+        "direction": "west"
+      },
+      "spatial_context": {
+        "agent_position": [
+          0,
+          1
+        ],
+        "target_position": [
+          -1,
+          1
+        ]
+      }
+    },
+    "state_context": {
+      "agent_beliefs": {
+        "reasoning": "I am currently at (1, 2) after performing a look() action on turn 7. I want to continue exploring the map to find the key or the exit door. Moving west to (1, 1) will allow me to explore the western side of the grid further.",
+        "expected_state": {
+          "partner_position": null
+        }
+      },
+      "shadow_state": {
+        "cell_status_2_3": "empty",
+        "cell_status_2_2": "empty",
+        "cell_status_2_4": "empty",
+        "cell_status_3_3": "empty",
+        "cell_status_1_3": "empty",
+        "cell_status_2_1": "empty",
+        "cell_status_3_2": "wall",
+        "cell_status_1_2": "empty",
+        "cell_status_2_0": "wall",
+        "cell_status_3_1": "empty",
+        "cell_status_1_1": "empty",
+        "cell_status_1_0": "empty",
+        "cell_status_0_1": "empty"
+      },
+      "ground_truth": {
+        "grid_width": 8,
+        "grid_height": 8,
+        "cell_status_2_0": "wall",
+        "cell_status_6_1": "exit_locked",
+        "cell_status_3_2": "wall",
+        "cell_status_7_2": "wall",
+        "cell_status_7_3": "wall",
+        "cell_status_3_4": "wall",
+        "cell_status_0_5": "wall",
+        "cell_status_2_5": "wall",
+        "cell_status_1_6": "wall",
+        "cell_status_6_6": "key",
+        "cell_status_7_7": "wall",
+        "agent_a_position": [
+          6,
+          1
+        ],
+        "agent_b_position": [
+          0,
+          1
+        ]
+      },
+      "agent_input": {
+        "message_inbox": [],
+        "recent_calls": [
+          {
+            "tool_name": "look",
+            "arguments": {},
+            "turn_number": 3
+          },
+          {
+            "tool_name": "move",
+            "arguments": {
+              "direction": "north"
+            },
+            "turn_number": 4
+          },
+          {
+            "tool_name": "look",
+            "arguments": {},
+            "turn_number": 5
+          },
+          {
+            "tool_name": "move",
+            "arguments": {
+              "direction": "west"
+            },
+            "turn_number": 6
+          },
+          {
+            "tool_name": "look",
+            "arguments": {},
+            "turn_number": 7
+          }
+        ],
+        "last_mistake": null,
+        "last_known_location": {
+          "position": [
+            2,
+            3
+          ],
+          "turn_number": 1
+        }
+      }
+    },
+    "execution_result": {
+      "status": "success",
+      "error_message": null,
+      "deltas": []
+    }
+  },
+  {
+    "event_id": "dd4faddf-8323-4159-ad78-ebc872166e1f",
+    "timestamp": "2026-04-09T22:26:18.435652+00:00",
+    "turn_number": 9,
+    "agent_id": "agent_a",
+    "action": {
+      "tool_name": "look",
+      "arguments": {},
+      "spatial_context": {
+        "agent_position": [
+          6,
+          1
+        ],
+        "target_position": null
+      }
+    },
+    "state_context": {
+      "agent_beliefs": {
+        "reasoning": "Based on the most recent actions, I was at (6, 2) on turn 6. On turn 7, I attempted to move east, but encountered a wall at (7, 2), which confirms that 'east' corresponds to the X-axis increasing (x+1, y) and 'north' corresponds to the Y-axis decreasing (x, y-1). On turn 8, I moved north, which should place me at (6, 1). According to my map, (6, 1) is the locked exit door. I will now use the look tool to confirm my current surroundings and verify that I am indeed at the exit.",
+        "expected_state": {
+          "cell_status_6_1": "exit_locked"
+        }
+      },
+      "shadow_state": {
+        "cell_status_6_4": "empty",
+        "cell_status_6_3": "empty",
+        "cell_status_6_5": "empty",
+        "cell_status_7_4": "empty",
+        "cell_status_5_4": "empty",
+        "cell_status_6_2": "empty",
+        "cell_status_7_3": "wall",
+        "cell_status_5_3": "empty",
+        "cell_status_6_1": "exit_locked",
+        "cell_status_7_2": "wall",
+        "cell_status_5_2": "empty"
+      },
+      "ground_truth": {
+        "grid_width": 8,
+        "grid_height": 8,
+        "cell_status_2_0": "wall",
+        "cell_status_6_1": "exit_locked",
+        "cell_status_3_2": "wall",
+        "cell_status_7_2": "wall",
+        "cell_status_7_3": "wall",
+        "cell_status_3_4": "wall",
+        "cell_status_0_5": "wall",
+        "cell_status_2_5": "wall",
+        "cell_status_1_6": "wall",
+        "cell_status_6_6": "key",
+        "cell_status_7_7": "wall",
+        "agent_a_position": [
+          6,
+          1
+        ],
+        "agent_b_position": [
+          0,
+          1
+        ]
+      },
+      "agent_input": {
+        "message_inbox": [],
+        "recent_calls": [
+          {
+            "tool_name": "move",
+            "arguments": {
+              "direction": "north"
+            },
+            "turn_number": 4
+          },
+          {
+            "tool_name": "look",
+            "arguments": {},
+            "turn_number": 5
+          },
+          {
+            "tool_name": "check_coordinates",
+            "arguments": {},
+            "turn_number": 6
+          },
+          {
+            "tool_name": "move",
+            "arguments": {
+              "direction": "east"
+            },
+            "turn_number": 7
+          },
+          {
+            "tool_name": "move",
+            "arguments": {
+              "direction": "north"
+            },
+            "turn_number": 8
+          }
+        ],
+        "last_mistake": {
+          "tool_name": "move",
+          "turn_number": 7,
+          "reason": "Cannot move east: wall"
+        },
+        "last_known_location": {
+          "position": [
+            6,
+            2
+          ],
+          "turn_number": 6
+        }
+      }
+    },
+    "execution_result": {
+      "status": "success",
+      "error_message": null,
+      "deltas": []
+    }
+  },
+  {
+    "event_id": "eade8154-3252-4cc2-a5c4-d35a4887e74d",
+    "timestamp": "2026-04-09T22:28:24.790072+00:00",
+    "turn_number": 9,
+    "agent_id": "agent_b",
+    "action": {
+      "tool_name": "look",
+      "arguments": {},
+      "spatial_context": {
+        "agent_position": [
+          0,
+          1
+        ],
+        "target_position": null
+      }
+    },
+    "state_context": {
+      "agent_beliefs": {
+        "reasoning": "I have moved north once and west twice since my last confirmed position of (2, 3) on turn 1 (assuming no movement on turns 2 and 3). This puts me at an estimated position of (0, 4). I will now use the look() tool to observe my current surroundings, update my map, and check for any items or the exit door.",
+        "expected_state": {
+          "cell_status_0_4": "empty"
+        }
+      },
+      "shadow_state": {
+        "cell_status_2_3": "empty",
+        "cell_status_2_2": "empty",
+        "cell_status_2_4": "empty",
+        "cell_status_3_3": "empty",
+        "cell_status_1_3": "empty",
+        "cell_status_2_1": "empty",
+        "cell_status_3_2": "wall",
+        "cell_status_1_2": "empty",
+        "cell_status_2_0": "wall",
+        "cell_status_3_1": "empty",
+        "cell_status_1_1": "empty",
+        "cell_status_1_0": "empty",
+        "cell_status_0_1": "empty"
+      },
+      "ground_truth": {
+        "grid_width": 8,
+        "grid_height": 8,
+        "cell_status_2_0": "wall",
+        "cell_status_6_1": "exit_locked",
+        "cell_status_3_2": "wall",
+        "cell_status_7_2": "wall",
+        "cell_status_7_3": "wall",
+        "cell_status_3_4": "wall",
+        "cell_status_0_5": "wall",
+        "cell_status_2_5": "wall",
+        "cell_status_1_6": "wall",
+        "cell_status_6_6": "key",
+        "cell_status_7_7": "wall",
+        "agent_a_position": [
+          6,
+          1
+        ],
+        "agent_b_position": [
+          0,
+          1
+        ]
+      },
+      "agent_input": {
+        "message_inbox": [],
+        "recent_calls": [
+          {
+            "tool_name": "move",
+            "arguments": {
+              "direction": "north"
+            },
+            "turn_number": 4
+          },
+          {
+            "tool_name": "look",
+            "arguments": {},
+            "turn_number": 5
+          },
+          {
+            "tool_name": "move",
+            "arguments": {
+              "direction": "west"
+            },
+            "turn_number": 6
+          },
+          {
+            "tool_name": "look",
+            "arguments": {},
+            "turn_number": 7
+          },
+          {
+            "tool_name": "move",
+            "arguments": {
+              "direction": "west"
+            },
+            "turn_number": 8
+          }
+        ],
+        "last_mistake": null,
+        "last_known_location": {
+          "position": [
+            2,
+            3
+          ],
+          "turn_number": 1
+        }
+      }
+    },
+    "execution_result": {
+      "status": "success",
+      "error_message": null,
+      "deltas": []
+    }
+  },
+  {
+    "event_id": "9f23e320-52c3-45c6-b97e-7854381b3314",
+    "timestamp": "2026-04-09T22:29:02.827359+00:00",
+    "turn_number": 10,
+    "agent_id": "agent_a",
+    "action": {
+      "tool_name": "move",
+      "arguments": {
+        "direction": "west"
+      },
+      "spatial_context": {
+        "agent_position": [
+          5,
+          1
+        ],
+        "target_position": [
+          4,
+          1
+        ]
+      }
+    },
+    "state_context": {
+      "agent_beliefs": {
+        "reasoning": "I am currently at (5, 2) after moving North from (6, 2) on turn 8 and observing my surroundings on turn 9. The exit is located at (6, 1). I will move West to (5, 1) to continue exploring the area near the exit and search for the key.",
+        "expected_state": {
+          "agent_inventory": [],
+          "cell_status_5_1": "empty"
+        }
+      },
+      "shadow_state": {
+        "cell_status_6_4": "empty",
+        "cell_status_6_3": "empty",
+        "cell_status_6_5": "empty",
+        "cell_status_7_4": "empty",
+        "cell_status_5_4": "empty",
+        "cell_status_6_2": "empty",
+        "cell_status_7_3": "wall",
+        "cell_status_5_3": "empty",
+        "cell_status_6_1": "exit_locked",
+        "cell_status_7_2": "wall",
+        "cell_status_5_2": "empty",
+        "cell_status_6_0": "empty",
+        "cell_status_7_1": "empty",
+        "cell_status_5_1": "empty"
+      },
+      "ground_truth": {
+        "grid_width": 8,
+        "grid_height": 8,
+        "cell_status_2_0": "wall",
+        "cell_status_6_1": "exit_locked",
+        "cell_status_3_2": "wall",
+        "cell_status_7_2": "wall",
+        "cell_status_7_3": "wall",
+        "cell_status_3_4": "wall",
+        "cell_status_0_5": "wall",
+        "cell_status_2_5": "wall",
+        "cell_status_1_6": "wall",
+        "cell_status_6_6": "key",
+        "cell_status_7_7": "wall",
+        "agent_a_position": [
+          5,
+          1
+        ],
+        "agent_b_position": [
+          0,
+          1
+        ]
+      },
+      "agent_input": {
+        "message_inbox": [],
+        "recent_calls": [
+          {
+            "tool_name": "look",
+            "arguments": {},
+            "turn_number": 5
+          },
+          {
+            "tool_name": "check_coordinates",
+            "arguments": {},
+            "turn_number": 6
+          },
+          {
+            "tool_name": "move",
+            "arguments": {
+              "direction": "east"
+            },
+            "turn_number": 7
+          },
+          {
+            "tool_name": "move",
+            "arguments": {
+              "direction": "north"
+            },
+            "turn_number": 8
+          },
+          {
+            "tool_name": "look",
+            "arguments": {},
+            "turn_number": 9
+          }
+        ],
+        "last_mistake": {
+          "tool_name": "move",
+          "turn_number": 7,
+          "reason": "Cannot move east: wall"
+        },
+        "last_known_location": {
+          "position": [
+            6,
+            2
+          ],
+          "turn_number": 6
+        }
+      }
+    },
+    "execution_result": {
+      "status": "success",
+      "error_message": null,
+      "deltas": []
+    }
+  }
+]

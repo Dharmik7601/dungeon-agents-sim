@@ -11,10 +11,9 @@ A multi-agent LLM simulation on a procedurally generated 8×8 grid dungeon. The 
 ## Setup
 
 ```bash
-pip install -r requirements-dev.txt
-cp .env.example .env
-# Edit .env and fill in GOOGLE_API_KEY and optionally LANGFUSE_* keys
+pip install -r requirements.txt
 ```
+Edit .env and fill in GOOGLE_API_KEY and optionally LANGFUSE_* keys
 
 ## Running
 
@@ -42,12 +41,6 @@ Options:
 make test
 # or
 pytest
-```
-
-**Lint and format:**
-```bash
-make lint      # ruff check .
-make format    # ruff format .
 ```
 
 ## Project Structure

@@ -1,8 +1,9 @@
 .DEFAULT_GOAL := help
 
 LOG ?=
+DIR ?= saved_logs/
 
-.PHONY: help run viewer test lint format clean save
+.PHONY: help run viewer test lint format clean save analyze analyze-all
 
 help:
 	@echo "Usage:"
@@ -13,6 +14,8 @@ help:
 	@echo "  make format           Format with ruff"
 	@echo "  make clean            Delete all logs from the data/ directory"
 	@echo "  make save LOG=<path>   Copy a log from data/ to saved_logs/"
+	@echo "  make analyze LOG=<path> Print single-run analysis for a log file"
+	@echo "  make analyze-all [DIR=<path>] Print cross-run analysis (default: saved_logs/)"
 
 run:
 	python -m src.loop.run_simulation
@@ -44,3 +47,12 @@ endif
 	@python -c "import os; os.makedirs('saved_logs', exist_ok=True)"
 	@python -c "import shutil; shutil.copy('$(LOG)', 'saved_logs/')"
 	@echo "Saved $(LOG) -> saved_logs/"
+
+analyze:
+ifeq ($(LOG),)
+	$(error LOG is required. Usage: make analyze LOG=data/run_<timestamp>.json)
+endif
+	python -m src.cli.single_run_analysis --log-file $(LOG)
+
+analyze-all:
+	python -m src.cli.cross_run_analysis --dir $(DIR)

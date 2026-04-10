@@ -45,3 +45,26 @@
 ## interrupt
 - [x] Feature A: add `EndCondition.INTERRUPTED`; `GameLoop` accepts `stop_event`; `run_simulation.py` spawns `msvcrt`-based daemon thread for Ctrl+E
 - [ ] Integration tests for interrupt
+
+## analysis-cli
+
+### single-run-analysis
+- [x] Scaffold `src/cli/single_run_analysis.py`: argparse entry point, load and validate log file, `main()` shell
+- [x] Metric A — Run Outcome & Duration: `derive_end_condition(events)`, total turns, final grid distance if not SUCCESS
+- [x] Metric B — Agent Efficiency: `compute_agent_efficiency(events)` — action breakdown, error rate, chatter volume per agent
+- [x] Metric C — Delusion Timeline: `compute_delusion_timeline(events)` — chronological delta list with time-to-correction per cell key
+- [x] Metric D — Map Coverage: `compute_map_coverage(events)` — union of both agents' final shadow states as % of 64 cells
+- [x] Render single-run report: wire all metrics into `rich` tables and panels
+
+### cross-run-analysis
+- [x] Scaffold `src/cli/cross_run_analysis.py`: argparse entry point (default dir: `saved_logs/`), load all `run_*.json` files, `main()` shell
+- [x] Metric A — Global Run Outcomes: success rate, avg completion turns, failure type distribution
+- [x] Metric B — Top Failure Drivers: `compute_top_failure_drivers(all_events)` — property_key or error_message frequency, top 5
+- [x] Metric C — Stubbornness Index: `compute_stubborn_failures(all_events)` — consecutive same-agent same-action failures as % of total failures
+- [x] Metric D — Tool Reliability: `compute_tool_reliability(all_events)` — failure rate % per tool_name
+- [x] Metric E — Average Exploration Density: mean map coverage across all runs
+- [x] Render cross-run report: wire all metrics into `rich` tables and panels
+
+### shared
+- [x] Add `make analyze LOG=<path>` and `make analyze-all DIR=<path>` targets to Makefile
+- [x] Integration tests for analysis-cli
