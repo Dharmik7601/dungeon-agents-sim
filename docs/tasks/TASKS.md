@@ -68,3 +68,21 @@
 ### shared
 - [x] Add `make analyze LOG=<path>` and `make analyze-all DIR=<path>` targets to Makefile
 - [x] Integration tests for analysis-cli
+
+## bugfix-compute-deltas
+
+### fix-1-oob-sparse-fallback
+- [x] Guard sparse-snapshot "empty" fallback with bounds check in `_compute_deltas`
+- [x] Integration tests for fix-1-oob-sparse-fallback
+
+### fix-2-move-position-keys
+- [ ] Extend `move` branch of `_compute_deltas` to check `agent_position` and `partner_position` keys
+- [ ] Integration tests for fix-2-move-position-keys
+
+### fix-3-pickup-inventory-key
+- [ ] Add `agent_inventory` to `pick_up` branch of `_compute_deltas`; thread inventory snapshot through `log_event` and `GameLoop`
+- [ ] Integration tests for fix-3-pickup-inventory-key
+
+### fix-4-prompt-target-cell
+- [ ] Add one sentence to `prompts/agent_system.md` instructing the LLM to reference the move target cell in `expected_state`
+- [ ] Integration tests for fix-4-prompt-target-cell

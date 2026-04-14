@@ -27,6 +27,21 @@ Produces two observability artifacts per run. `SemanticLogger` accumulates one s
 - `src/tracing/langfuse_wrapper.py`
   - `wrap_with_langfuse(llm_client, run_id, turn_number, agent_id) -> Callable`
 
+## Bug Fixes
+
+### bugfix-compute-deltas (branch: bugfix-compute_deltas)
+
+Four bugs that caused `_compute_deltas` to return an empty list for the majority of real failure events, making the diagnostic viewer's "State Desync Diff" useless.
+
+| # | Status | Location | Description |
+|---|---|---|---|
+| 1 — OOB sparse fallback | **done** | `semantic_logger.py` | **Before:** missing `cell_status_*` keys were blindly defaulted to `"empty"`, masking mismatches where the LLM expected an OOB cell. **After:** the default only applies when `0 <= cx < grid_w and 0 <= cy < grid_h`; OOB keys stay `None` so the mismatch fires. **Why:** the sparse snapshot omits empty cells as an optimisation, but that same omission should not paper over cells that don't exist at all. |
+| 2 — `agent_position` / `partner_position` ignored | **pending** | `semantic_logger.py` | The `move` branch only collected `cell_status_*` keys. `agent_position` and `partner_position` keys from `expected_state` were silently dropped. |
+| 3 — `agent_inventory` ignored for `pick_up` | **pending** | `semantic_logger.py` | The `pick_up` branch only collected `cell_contents_*` keys. The LLM uses `agent_inventory` instead; these were silently dropped. Fix requires threading an inventory snapshot through `log_event` and `GameLoop`. |
+| 4 — LLM references wrong cell in `expected_state` | **pending** | `prompts/agent_system.md` | ~14/41 failures had a `cell_status_*` key referencing a random nearby cell instead of the move target, producing empty deltas by coincidence. A prompt instruction added to enforce the correct key. |
+
+*Each row will be updated to **done** with before/after details once implemented.*
+
 ## Testing
 - **Unit** — `_ground_truth_snapshot` produces correct cell and agent keys (sparse: no empty cells), includes `grid_width`/`grid_height`, omits `cell_status_*` keys for empty cells; `_compute_deltas` treats missing cell keys as "empty" (no spurious delta); `_compute_deltas` for `move` (no mismatch, wall mismatch, fog-of-war); for `pick_up` (stale shadow); for `use_item` (inventory mismatch); no-op tools produce empty deltas; `log_event` produces event with all required schema keys including `state_context.agent_input`; `agent_input` contains correct `message_inbox`, `recent_calls`, `last_mistake`, `last_known_location`; defaults to empty/null values when kwargs not provided; `flush` writes valid JSON array, creates missing dir, handles empty event list; unique `event_id` per event
 - **Integration** — known `stale_shadow_state` mismatch appears in `execution_result.deltas`; Langfuse wrapper falls back gracefully when env vars absent; Langfuse v4 API path verified via mock

@@ -575,3 +575,40 @@ def test_log_event_agent_input_last_known_location_null_when_not_provided():
 
     ai = logger._events[0]["state_context"]["agent_input"]
     assert ai["last_known_location"] is None
+
+
+# ---------------------------------------------------------------------------
+# Fix 1 — OOB sparse-snapshot fallback
+# ---------------------------------------------------------------------------
+
+def test_compute_deltas_move_oob_cell_produces_delta():
+    """LLM expected an out-of-bounds cell to be 'empty'; should produce a delta,
+    not silently match via the in-bounds sparse fallback."""
+    world = _make_world()  # 8×8 grid, valid x: 0-7, valid y: 0-7
+    expected = {"cell_status_8_4": "empty"}  # x=8 is OOB
+    shadow_before = {}
+    deltas = _compute_deltas("move", expected, shadow_before, world, agent_pos=(7, 4))
+    assert len(deltas) == 1
+    assert deltas[0]["property_key"] == "cell_status_8_4"
+    assert deltas[0]["actual_value"] is None
+    assert deltas[0]["discrepancy_source"] == "fog_of_war"
+
+
+def test_compute_deltas_move_negative_coord_produces_delta():
+    """Negative coordinate is also OOB — must not be defaulted to 'empty'."""
+    world = _make_world()
+    expected = {"cell_status_-1_3": "empty"}
+    shadow_before = {}
+    deltas = _compute_deltas("move", expected, shadow_before, world, agent_pos=(0, 3))
+    assert len(deltas) == 1
+    assert deltas[0]["actual_value"] is None
+
+
+def test_compute_deltas_move_inbounds_empty_cell_no_delta():
+    """In-bounds empty cell still correctly produces no delta (sparse fallback
+    must still work for the happy-path case)."""
+    world = _make_world()  # (2, 2) is EMPTY
+    expected = {"cell_status_2_2": "empty"}
+    shadow_before = {(2, 2): CellType.EMPTY}
+    deltas = _compute_deltas("move", expected, shadow_before, world, agent_pos=(1, 2))
+    assert deltas == []

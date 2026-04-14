@@ -72,8 +72,18 @@ def _compute_deltas(
         expected_val = expected_state[key]
         actual_val = ground_truth.get(key)
         # Sparse snapshot omits empty cells; treat missing cell_status keys as "empty"
+        # only when the coordinates are within the actual grid — OOB coordinates
+        # have no ground truth at all and must remain None so the mismatch fires.
         if actual_val is None and key.startswith("cell_status_"):
-            actual_val = CellType.EMPTY.value
+            parts = key.replace("cell_status_", "").split("_")
+            try:
+                cx, cy = int(parts[0]), int(parts[1])
+            except (ValueError, IndexError):
+                cx, cy = -1, -1
+            grid_w = len(world.grid[0]) if world.grid else 0
+            grid_h = len(world.grid)
+            if 0 <= cx < grid_w and 0 <= cy < grid_h:
+                actual_val = CellType.EMPTY.value
 
         # Normalise cell_contents keys: ground truth uses cell_status, not cell_contents
         # For pick_up we compare against whether the key item is still there
