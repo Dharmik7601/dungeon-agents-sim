@@ -3,7 +3,15 @@
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
+
+# Ensure the project root is on sys.path so `src.*` imports resolve whether
+# the script is launched via `streamlit run src/cli/streamlit_app.py` from the
+# project root locally, or from an arbitrary working directory on Streamlit Cloud.
+_project_root = Path(__file__).resolve().parents[2]
+if str(_project_root) not in sys.path:
+    sys.path.insert(0, str(_project_root))
 
 # ---------------------------------------------------------------------------
 # Cell display constants (mirrors board_renderer.py)
