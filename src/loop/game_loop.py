@@ -111,6 +111,7 @@ class GameLoop:
         recent_calls_snapshot = list(agent.recent_calls)
         last_mistake_snapshot = dict(agent.last_mistake) if agent.last_mistake else None
         message_inbox_snapshot = list(agent.message_inbox)
+        inventory_snapshot = list(agent.inventory)
         if agent.last_known_position is not None:
             last_known_location_snapshot = {
                 "position": list(agent.last_known_position),
@@ -153,6 +154,7 @@ class GameLoop:
             recent_calls_before=recent_calls_snapshot,
             last_mistake_before=last_mistake_snapshot,
             last_known_location_before=last_known_location_snapshot,
+            agent_inventory_before=inventory_snapshot,
         )
 
         # Check action deadlock

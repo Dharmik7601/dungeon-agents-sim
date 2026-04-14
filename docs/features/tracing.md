@@ -21,8 +21,8 @@ Produces two observability artifacts per run. `SemanticLogger` accumulates one s
 ## Key Files
 - `src/tracing/semantic_logger.py`
   - `_ground_truth_snapshot(world) -> dict`
-  - `_compute_deltas(tool_name, expected_state, shadow_state_before, world, agent_pos, agent_id="") -> list[dict]`
-  - `SemanticLogger.log_event(*, turn_number, agent_id, llm_response, shadow_state_before, tool_result, world, message_inbox=None, recent_calls_before=None, last_mistake_before=None, last_known_location_before=None)`
+  - `_compute_deltas(tool_name, expected_state, shadow_state_before, world, agent_pos, agent_id="", agent_inventory=None) -> list[dict]`
+  - `SemanticLogger.log_event(*, turn_number, agent_id, llm_response, shadow_state_before, tool_result, world, message_inbox=None, recent_calls_before=None, last_mistake_before=None, last_known_location_before=None, agent_inventory_before=None)`
   - `SemanticLogger.flush(run_id="") -> str`
 - `src/tracing/langfuse_wrapper.py`
   - `wrap_with_langfuse(llm_client, run_id, turn_number, agent_id) -> Callable`
@@ -37,7 +37,7 @@ Four bugs that caused `_compute_deltas` to return an empty list for the majority
 |---|---|---|---|
 | 1 — OOB sparse fallback | **done** | `semantic_logger.py` | **Before:** missing `cell_status_*` keys were blindly defaulted to `"empty"`, masking mismatches where the LLM expected an OOB cell. **After:** the default only applies when `0 <= cx < grid_w and 0 <= cy < grid_h`; OOB keys stay `None` so the mismatch fires. **Why:** the sparse snapshot omits empty cells as an optimisation, but that same omission should not paper over cells that don't exist at all. |
 | 2 — `agent_position` / `partner_position` ignored | **done** | `semantic_logger.py` | **Before:** the `move` branch only collected `cell_status_*` keys; `agent_position` and `partner_position` were silently dropped. **After:** both keys are checked outside the `keys_to_check` loop — `agent_position` is compared against the resolved `agent_pos` tuple; `partner_position` is resolved by finding the `*_position` key in `ground_truth` that doesn't belong to this agent. `_compute_deltas` gains an `agent_id: str = ""` parameter to enable that lookup. **Why:** these are the most common keys the LLM puts in `expected_state` for move actions, so ignoring them meant the majority of real move failures produced zero deltas. |
-| 3 — `agent_inventory` ignored for `pick_up` | **pending** | `semantic_logger.py` | The `pick_up` branch only collected `cell_contents_*` keys. The LLM uses `agent_inventory` instead; these were silently dropped. Fix requires threading an inventory snapshot through `log_event` and `GameLoop`. |
+| 3 — `agent_inventory` ignored for `pick_up` | **done** | `semantic_logger.py`, `game_loop.py` | **Before:** the `pick_up` branch only collected `cell_contents_*` keys; `agent_inventory` was silently dropped. **After:** `agent_inventory` is checked inline in the `pick_up` branch using the actual pre-dispatch inventory. `_compute_deltas` gains `agent_inventory: list \| None = None`; `log_event` gains `agent_inventory_before: list \| None = None`; `GameLoop` snapshots `list(agent.inventory)` before dispatch and passes it through. **Why:** `agent_inventory` can't be resolved from `ground_truth` (inventory lives on `AgentState`, not `WorldState`), so it must be threaded explicitly. |
 | 4 — LLM references wrong cell in `expected_state` | **pending** | `prompts/agent_system.md` | ~14/41 failures had a `cell_status_*` key referencing a random nearby cell instead of the move target, producing empty deltas by coincidence. A prompt instruction added to enforce the correct key. |
 
 *Each row will be updated to **done** with before/after details once implemented.*

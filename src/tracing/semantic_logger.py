@@ -51,6 +51,7 @@ def _compute_deltas(
     world: WorldState,
     agent_pos: tuple[int, int],
     agent_id: str = "",
+    agent_inventory: list | None = None,
 ) -> list[dict]:
     if tool_name in _NO_DELTA_TOOLS:
         return []
@@ -92,6 +93,15 @@ def _compute_deltas(
                 })
     elif tool_name == "pick_up":
         keys_to_check = [k for k in expected_state if k.startswith("cell_contents_")]
+        if "agent_inventory" in expected_state:
+            actual_inv = list(agent_inventory) if agent_inventory is not None else []
+            if expected_state["agent_inventory"] != actual_inv:
+                deltas.append({
+                    "property_key": "agent_inventory",
+                    "expected_value": expected_state["agent_inventory"],
+                    "actual_value": actual_inv,
+                    "discrepancy_source": "stale_shadow_state",
+                })
     elif tool_name == "use_item":
         keys_to_check = [k for k in expected_state
                          if k in ("agent_inventory",) or k.startswith("cell_status_")]
@@ -198,6 +208,7 @@ class SemanticLogger:
         recent_calls_before: list | None = None,
         last_mistake_before: dict | None = None,
         last_known_location_before: dict | None = None,
+        agent_inventory_before: list | None = None,
     ) -> None:
         agent_pos = world.agent_positions.get(agent_id, (0, 0))
         ground_truth = _ground_truth_snapshot(world)
@@ -212,6 +223,7 @@ class SemanticLogger:
             world,
             agent_pos,
             agent_id,
+            agent_inventory_before,
         )
 
         event = {

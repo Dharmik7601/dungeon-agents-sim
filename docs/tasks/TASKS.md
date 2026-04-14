@@ -80,8 +80,8 @@
 - [x] Integration tests for fix-2-move-position-keys
 
 ### fix-3-pickup-inventory-key
-- [ ] Add `agent_inventory` to `pick_up` branch of `_compute_deltas`; thread inventory snapshot through `log_event` and `GameLoop`
-- [ ] Integration tests for fix-3-pickup-inventory-key
+- [x] Add `agent_inventory` to `pick_up` branch of `_compute_deltas`; thread inventory snapshot through `log_event` and `GameLoop`
+- [x] Integration tests for fix-3-pickup-inventory-key
 
 ### fix-4-prompt-target-cell
 - [ ] Add one sentence to `prompts/agent_system.md` instructing the LLM to reference the move target cell in `expected_state`

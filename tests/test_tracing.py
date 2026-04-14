@@ -663,3 +663,75 @@ def test_compute_deltas_move_no_position_keys_unchanged():
     deltas = _compute_deltas("move", expected, shadow_before, world, agent_pos=(0, 0), agent_id="agent_a")
     assert len(deltas) == 1
     assert deltas[0]["property_key"] == "cell_status_1_0"
+
+
+# ---------------------------------------------------------------------------
+# Fix 3 — agent_inventory key for pick_up
+# ---------------------------------------------------------------------------
+
+def test_compute_deltas_pickup_inventory_mismatch():
+    """LLM expected agent_inventory=['key'] but actual inventory is [] (pick_up failed)."""
+    world = _make_world()
+    expected = {"agent_inventory": ["key"]}
+    shadow_before = {}
+    deltas = _compute_deltas(
+        "pick_up", expected, shadow_before, world,
+        agent_pos=(3, 3), agent_id="agent_a", agent_inventory=[],
+    )
+    assert len(deltas) == 1
+    assert deltas[0]["property_key"] == "agent_inventory"
+    assert deltas[0]["expected_value"] == ["key"]
+    assert deltas[0]["actual_value"] == []
+    assert deltas[0]["discrepancy_source"] == "stale_shadow_state"
+
+
+def test_compute_deltas_pickup_inventory_match_no_delta():
+    """agent_inventory matches actual inventory — no delta emitted."""
+    world = _make_world()
+    expected = {"agent_inventory": ["key"]}
+    shadow_before = {}
+    deltas = _compute_deltas(
+        "pick_up", expected, shadow_before, world,
+        agent_pos=(3, 3), agent_id="agent_a", agent_inventory=["key"],
+    )
+    assert deltas == []
+
+
+def test_compute_deltas_pickup_cell_contents_unchanged():
+    """cell_contents_* behaviour for pick_up is unaffected when agent_inventory absent."""
+    world = _make_world()
+    world.grid[3][3] = CellType.EMPTY
+    world.key_pos = None
+    expected = {"cell_contents_3_3": ["key"]}
+    shadow_before = {(3, 3): CellType.KEY}
+    deltas = _compute_deltas(
+        "pick_up", expected, shadow_before, world,
+        agent_pos=(3, 3), agent_id="agent_a", agent_inventory=[],
+    )
+    assert len(deltas) == 1
+    assert deltas[0]["property_key"] == "cell_contents_3_3"
+
+
+def test_log_event_passes_inventory_snapshot_to_deltas():
+    """log_event with agent_inventory_before=[] and expected_state={'agent_inventory': ['key']}
+    on a pick_up failure should produce a delta in execution_result.deltas."""
+    logger = SemanticLogger()
+    world = _make_world()
+    response = LLMResponse(
+        reasoning="picking up key",
+        expected_state={"agent_inventory": ["key"]},
+        tool_name="pick_up",
+        arguments={"item": "key"},
+    )
+    logger.log_event(
+        turn_number=1,
+        agent_id="agent_a",
+        llm_response=response,
+        shadow_state_before={},
+        tool_result=_failure_result("No 'key' at (3, 3)"),
+        world=world,
+        agent_inventory_before=[],
+    )
+    deltas = logger._events[0]["execution_result"]["deltas"]
+    assert len(deltas) == 1
+    assert deltas[0]["property_key"] == "agent_inventory"
