@@ -84,5 +84,4 @@
 - [x] Integration tests for fix-3-pickup-inventory-key
 
 ### fix-4-prompt-target-cell
-- [ ] Add one sentence to `prompts/agent_system.md` instructing the LLM to reference the move target cell in `expected_state`
-- [ ] Integration tests for fix-4-prompt-target-cell
+- [x] Add one sentence to `prompts/agent_system.md` instructing the LLM to reference the move target cell in `expected_state`

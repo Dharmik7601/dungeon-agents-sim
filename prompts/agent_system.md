@@ -139,5 +139,5 @@ You MUST respond with valid JSON only — no prose, no markdown, no explanation 
 }
 ```
 
-Only include keys in `expected_state` that are directly relevant to the action you are about to take. Omit irrelevant keys entirely.
+Only include keys in `expected_state` that are directly relevant to the action you are about to take. Omit irrelevant keys entirely. For `move`, the `cell_status_X_Y` key must refer to the **target cell** — the specific cell you are moving into — not any other nearby cell.
 </system_prompt>
