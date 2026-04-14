@@ -1,7 +1,7 @@
 # Tasks
 
 ## project-setup
-- [x] Create `pyproject.toml` with all dependencies and dev tooling (google-generativeai, langfuse, rich, pytest, ruff)
+- [x] ~~Create `pyproject.toml` with all dependencies and dev tooling~~ (removed — pyproject.toml and requirements-dev.txt deleted; dependencies managed via requirements.txt only)
 - [x] Create `.env.example` listing all required environment variables
 - [x] Create `prompts/agent_system.md` with the XML system prompt and `{{PLACEHOLDER}}` injection points
 - [x] Integration tests for project-setup

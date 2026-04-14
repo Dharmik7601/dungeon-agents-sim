@@ -4,7 +4,7 @@ A multi-agent LLM simulation on a procedurally generated 8×8 grid dungeon. The 
 
 ## How to Use
 
-- Install dependencies: `pip install -r requirements-dev.txt`
+- Install dependencies: `pip install -r requirements.txt`
 - Configure environment: copy `.env.example` to `.env` and fill in values
 - Run a simulation: `python -m src.loop.run_simulation`
 - View a diagnostic replay: `python -m src.cli.diagnostic_viewer --log-file data/run_<timestamp>.json`
