@@ -7,7 +7,11 @@ A multi-agent LLM simulation on a procedurally generated 8×8 grid dungeon. The 
 - Install dependencies: `pip install -r requirements.txt`
 - Configure environment: copy `.env.example` to `.env` and fill in values
 - Run a simulation: `python -m src.loop.run_simulation`
+- Save a log for analysis: `make save LOG=data/run_<timestamp>.json`
 - View a diagnostic replay: `python -m src.cli.diagnostic_viewer --log-file data/run_<timestamp>.json`
+- Analyse a single run: `make analyze LOG=data/run_<timestamp>.json`
+- Analyse all saved runs: `make analyze-all` (reads from `saved_logs/`)
+- Launch Streamlit dashboard: `make streamlit` (reads logs from `saved_logs/`)
 - Run tests: `pytest`
 - Lint: `ruff check .`
 - Format: `ruff format .`
@@ -25,9 +29,10 @@ dungeon-agents-sim/
 │   ├── agents/          # AgentState, ToolDispatcher, LLMClient
 │   ├── loop/            # GameLoop orchestrator, end-condition checker
 │   ├── tracing/         # SemanticLogger (crash-safe), Langfuse @observe wrapper
-│   └── cli/             # diagnostic_viewer.py, board_renderer.py (rich + argparse)
+│   └── cli/             # diagnostic_viewer.py, board_renderer.py, streamlit_app.py
 ├── prompts/             # agent_system.md — XML system prompt with placeholders
 ├── data/                # semantic logs — run_*.json (clean exit) or run_wip_*.json (crash)
+├── saved_logs/          # logs archived here for dashboard and analysis tools
 └── tests/               # pytest test suite
 ```
 
@@ -38,6 +43,9 @@ dungeon-agents-sim/
 - `docs/tasks/TASKS.md` — task checklist, updated after each sub-task
 - `docs/features/<name>.md` — per-feature detail: implementation and tests
 - `prompts/agent_system.md` — XML system prompt injected before every LLM call
+- `src/cli/single_run_analysis.py` — per-run metrics: outcome, agent efficiency, delusion timeline, map coverage
+- `src/cli/cross_run_analysis.py` — cross-run aggregate metrics: success rates, failure drivers, stubbornness, tool reliability, exploration density
+- `src/cli/streamlit_app.py` — Streamlit web dashboard; delegates all metric computation to the two analysis modules above
 
 ## Environment Variables
 

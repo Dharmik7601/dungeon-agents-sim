@@ -4,7 +4,7 @@ LOG ?=
 DIR ?= saved_logs/
 RUNS ?= 10
 
-.PHONY: help run batch viewer test lint format clean save analyze analyze-all
+.PHONY: help run batch viewer test lint format clean save analyze analyze-all streamlit
 
 help:
 	@echo "Usage:"
@@ -18,6 +18,7 @@ help:
 	@echo "  make save LOG=<path>   Copy a log from data/ to saved_logs/"
 	@echo "  make analyze LOG=<path> Print single-run analysis for a log file"
 	@echo "  make analyze-all [DIR=<path>] Print cross-run analysis (default: saved_logs/)"
+	@echo "  make streamlit        Launch the Streamlit observability dashboard"
 
 run:
 	python -m src.loop.run_simulation
@@ -61,3 +62,6 @@ endif
 
 analyze-all:
 	python -m src.cli.cross_run_analysis --dir $(DIR)
+
+streamlit:
+	streamlit run src/cli/streamlit_app.py

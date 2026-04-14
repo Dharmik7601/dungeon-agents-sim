@@ -66,6 +66,35 @@ Board symbols: `A` agent_a · `B` agent_b · `✦` both at same cell · `K` key 
 - **Success:** dim single-line header + `── Input ──` (last known location, shadow size, inbox, last mistake, recent calls) + `── Output ──` (reasoning)
 - **Failure:** red `Panel` titled `INCIDENT — Turn N | agent_id` with `── Input ──`, `── Output ──` (reasoning + action), and `── Result ──` (error message + state desync diff)
 
+### CLI Analysis Tools
+
+Two standalone scripts analyse completed run logs stored in `saved_logs/` (or any path passed via `--log-file` / `--dir`).
+
+**`src/cli/single_run_analysis.py`** (`make analyze LOG=<path>`) — deep-dives a single run:
+- **Outcome & Duration** — `derive_end_condition()`, total turns, final grid distance when not SUCCESS
+- **Agent Efficiency** — `compute_agent_efficiency()` — per-agent action breakdown, error rate, chatter volume
+- **Delusion Timeline** — `compute_delusion_timeline()` — chronological delta list with time-to-correction per cell key
+- **Map Coverage** — `compute_map_coverage()` — union of both agents' final shadow states as % of 64 cells
+
+**`src/cli/cross_run_analysis.py`** (`make analyze-all`) — aggregates across all `run_*.json` files in a directory:
+- **Global Run Outcomes** — success rate, avg completion turns, failure type distribution
+- **Top Failure Drivers** — `compute_top_failure_drivers()` — property key or error message frequency, top 5
+- **Stubbornness Index** — `compute_stubborn_failures()` — consecutive same-agent same-action failures as % of total failures
+- **Tool Reliability** — `compute_tool_reliability()` — failure rate % per tool name
+- **Average Exploration Density** — mean map coverage across all runs
+
+Both scripts render output via `rich` tables and panels. All `compute_*` functions are pure — they take event lists and return plain dicts/lists, making them reusable by the Streamlit dashboard without any CLI dependency.
+
+### Streamlit Dashboard
+
+`src/cli/streamlit_app.py` is a web-based observability dashboard (`make streamlit`) that reads completed logs from `saved_logs/`. It provides three modes:
+
+- **Interactive Replay** — turn-by-turn navigation (◀ Prev / turn input / Next ▶) with three side-by-side HTML grids (ground truth, agent A perspective with fog-of-war, agent B perspective with fog-of-war) and a permanent side-by-side inspector for both agents showing Input / Output / Result sections for every turn.
+- **Run Performance** — single-run metrics: outcome + duration, agent efficiency table, delusion timeline, map coverage. Log file selected at the top of the page.
+- **Global Insights** — cross-run aggregate metrics: success rates, top failure drivers, stubbornness index, tool reliability Plotly bar chart, exploration density chart.
+
+All metric computation is delegated to the existing `compute_*` functions in `single_run_analysis.py` and `cross_run_analysis.py`. Only the rendering layer is new. The `render_html_grid()` function is a pure Python function (no Streamlit dependency) that produces CSS-styled HTML table strings for the grid panels.
+
 ---
 
 ## Directory Structure
@@ -77,9 +106,10 @@ dungeon-agents-sim/
 │   ├── agents/         # AgentState, ToolDispatcher, LLMClient
 │   ├── loop/           # GameLoop orchestrator, end-condition checker, run_simulation entry point
 │   ├── tracing/        # SemanticLogger (crash-safe WIP writes), Langfuse wrapper
-│   └── cli/            # diagnostic_viewer.py, board_renderer.py
+│   └── cli/            # diagnostic_viewer.py, board_renderer.py, single_run_analysis.py, cross_run_analysis.py, streamlit_app.py
 ├── prompts/            # agent_system.md (XML system prompt)
 ├── data/               # run_*.json (clean) or run_wip_*.json (crash recovery)
+├── saved_logs/         # logs archived here for dashboard and CLI analysis tools
 ├── tests/              # pytest test suite
 └── docs/
     ├── DESIGN.md        # this file

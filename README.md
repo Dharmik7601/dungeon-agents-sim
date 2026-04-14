@@ -58,6 +58,15 @@ make analyze-all DIR=saved_logs/
 python -m src.cli.cross_run_analysis --dir saved_logs/
 ```
 
+**Launch the Streamlit observability dashboard:**
+```bash
+make streamlit
+# or
+streamlit run src/cli/streamlit_app.py
+```
+
+The dashboard reads logs from `saved_logs/`. Use `make save LOG=<path>` to copy a completed run there first. Three modes are available: Interactive Replay (turn-by-turn board + inspector), Run Performance (single-run metrics), and Global Insights (cross-run aggregate trends).
+
 **Run tests:**
 ```bash
 make test
@@ -80,8 +89,9 @@ dungeon-agents-sim/
 │   ├── agents/          # AgentState, ToolDispatcher, LLMClient
 │   ├── loop/            # GameLoop orchestrator, end-condition checker, run_simulation entry point
 │   ├── tracing/         # SemanticLogger (crash-safe WIP writes), Langfuse @observe wrapper
-│   └── cli/             # diagnostic_viewer.py, board_renderer.py
+│   └── cli/             # diagnostic_viewer.py, board_renderer.py, streamlit_app.py
 ├── data/                # semantic logs — run_*.json (clean) or run_wip_*.json (crash recovery)
+├── saved_logs/          # logs copied here via `make save` for analysis and dashboard
 └── tests/               # pytest test suite
 ```
 

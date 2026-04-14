@@ -85,3 +85,26 @@
 
 ### fix-4-prompt-target-cell
 - [x] Add one sentence to `prompts/agent_system.md` instructing the LLM to reference the move target cell in `expected_state`
+
+## streamlit-dashboard
+
+### streamlit-dependencies
+- [x] Add `streamlit`, `pandas`, `plotly` to `requirements.txt`
+- [x] Add `make streamlit` target to `Makefile`
+
+### html-grid-renderer
+- [x] Implement `render_html_grid(grid_data, agent_positions, width, height, shadow_filter=None) -> str` in `src/cli/streamlit_app.py`
+- [x] Unit tests for `render_html_grid`
+
+### app-scaffold
+- [x] Implement `list_log_files(directory) -> list[Path]` and Streamlit sidebar + mode selector in `src/cli/streamlit_app.py`
+- [x] Unit tests for `list_log_files`
+
+### interactive-replay
+- [x] Implement `render_interactive_replay(events)`: turn slider, perspective toggle, dual HTML grids, turn inspector
+
+### run-performance
+- [x] Implement `render_run_performance(events)`: wire all four single-run `compute_*` functions into Streamlit display
+
+### global-insights
+- [x] Implement `render_global_insights(log_dir)`: wire all five cross-run `compute_*` functions including Plotly charts
