@@ -610,5 +610,56 @@ def test_compute_deltas_move_inbounds_empty_cell_no_delta():
     world = _make_world()  # (2, 2) is EMPTY
     expected = {"cell_status_2_2": "empty"}
     shadow_before = {(2, 2): CellType.EMPTY}
-    deltas = _compute_deltas("move", expected, shadow_before, world, agent_pos=(1, 2))
+    deltas = _compute_deltas("move", expected, shadow_before, world, agent_pos=(1, 2), agent_id="agent_a")
     assert deltas == []
+
+
+# ---------------------------------------------------------------------------
+# Fix 2 — agent_position / partner_position keys for move
+# ---------------------------------------------------------------------------
+
+def test_compute_deltas_move_agent_position_mismatch():
+    """LLM expected agent_position [5, 4] but agent is actually at [4, 4]."""
+    world = _make_world(agent_a_pos=(4, 4))
+    expected = {"agent_position": [5, 4]}
+    shadow_before = {}
+    deltas = _compute_deltas("move", expected, shadow_before, world, agent_pos=(4, 4), agent_id="agent_a")
+    assert len(deltas) == 1
+    assert deltas[0]["property_key"] == "agent_position"
+    assert deltas[0]["expected_value"] == [5, 4]
+    assert deltas[0]["actual_value"] == [4, 4]
+    assert deltas[0]["discrepancy_source"] == "stale_shadow_state"
+
+
+def test_compute_deltas_move_partner_position_mismatch():
+    """LLM expected partner at [3, 3] but partner (agent_b) is at [7, 7]."""
+    world = _make_world(agent_a_pos=(0, 0), agent_b_pos=(7, 7))
+    expected = {"partner_position": [3, 3]}
+    shadow_before = {}
+    deltas = _compute_deltas("move", expected, shadow_before, world, agent_pos=(0, 0), agent_id="agent_a")
+    assert len(deltas) == 1
+    assert deltas[0]["property_key"] == "partner_position"
+    assert deltas[0]["expected_value"] == [3, 3]
+    assert deltas[0]["actual_value"] == [7, 7]
+    assert deltas[0]["discrepancy_source"] == "stale_shadow_state"
+
+
+def test_compute_deltas_move_agent_position_match_no_delta():
+    """agent_position matches ground truth — no delta emitted."""
+    world = _make_world(agent_a_pos=(3, 2))
+    expected = {"agent_position": [3, 2]}
+    shadow_before = {}
+    deltas = _compute_deltas("move", expected, shadow_before, world, agent_pos=(3, 2), agent_id="agent_a")
+    assert deltas == []
+
+
+def test_compute_deltas_move_no_position_keys_unchanged():
+    """No agent_position / partner_position in expected_state — existing cell_status
+    behaviour is unaffected."""
+    world = _make_world()
+    world.grid[0][1] = CellType.WALL
+    expected = {"cell_status_1_0": "empty"}
+    shadow_before = {(1, 0): CellType.EMPTY}
+    deltas = _compute_deltas("move", expected, shadow_before, world, agent_pos=(0, 0), agent_id="agent_a")
+    assert len(deltas) == 1
+    assert deltas[0]["property_key"] == "cell_status_1_0"

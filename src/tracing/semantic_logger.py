@@ -50,6 +50,7 @@ def _compute_deltas(
     shadow_state_before: dict[tuple, CellType],
     world: WorldState,
     agent_pos: tuple[int, int],
+    agent_id: str = "",
 ) -> list[dict]:
     if tool_name in _NO_DELTA_TOOLS:
         return []
@@ -60,6 +61,35 @@ def _compute_deltas(
     # Determine which expected_state keys to evaluate for this tool
     if tool_name == "move":
         keys_to_check = [k for k in expected_state if k.startswith("cell_status_")]
+
+        # Check agent_position and partner_position explicitly — not part of keys_to_check
+        # loop since they need direct position resolution rather than key lookup.
+        if "agent_position" in expected_state:
+            expected_pos = expected_state["agent_position"]
+            actual_pos = list(agent_pos)
+            if expected_pos != actual_pos:
+                deltas.append({
+                    "property_key": "agent_position",
+                    "expected_value": expected_pos,
+                    "actual_value": actual_pos,
+                    "discrepancy_source": "stale_shadow_state",
+                })
+
+        if "partner_position" in expected_state:
+            expected_pos = expected_state["partner_position"]
+            # Find partner's actual position from ground_truth
+            partner_actual = None
+            for key, val in ground_truth.items():
+                if key.endswith("_position") and key != f"{agent_id}_position":
+                    partner_actual = val
+                    break
+            if partner_actual is not None and expected_pos != partner_actual:
+                deltas.append({
+                    "property_key": "partner_position",
+                    "expected_value": expected_pos,
+                    "actual_value": partner_actual,
+                    "discrepancy_source": "stale_shadow_state",
+                })
     elif tool_name == "pick_up":
         keys_to_check = [k for k in expected_state if k.startswith("cell_contents_")]
     elif tool_name == "use_item":
@@ -181,6 +211,7 @@ class SemanticLogger:
             shadow_state_before,
             world,
             agent_pos,
+            agent_id,
         )
 
         event = {

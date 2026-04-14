@@ -76,8 +76,8 @@
 - [x] Integration tests for fix-1-oob-sparse-fallback
 
 ### fix-2-move-position-keys
-- [ ] Extend `move` branch of `_compute_deltas` to check `agent_position` and `partner_position` keys
-- [ ] Integration tests for fix-2-move-position-keys
+- [x] Extend `move` branch of `_compute_deltas` to check `agent_position` and `partner_position` keys
+- [x] Integration tests for fix-2-move-position-keys
 
 ### fix-3-pickup-inventory-key
 - [ ] Add `agent_inventory` to `pick_up` branch of `_compute_deltas`; thread inventory snapshot through `log_event` and `GameLoop`
