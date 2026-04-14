@@ -260,24 +260,24 @@ def _render_interactive_replay(log_files: list[Path]) -> None:
             st.session_state[state_key] = new_turn
             st.session_state[input_key] = str(new_turn)
             st.rerun()
+    def _on_turn_input() -> None:
+        # Called by Streamlit before the next render — safe to write any key.
+        raw = st.session_state[input_key]
+        if raw.lstrip("-").isdigit():
+            parsed = int(raw)
+            clamped = max(unique_turns[0], min(unique_turns[-1], parsed))
+            st.session_state[state_key] = clamped
+            st.session_state[input_key] = str(clamped)
+        else:
+            # Non-numeric: reset box to current valid turn
+            st.session_state[input_key] = str(st.session_state[state_key])
+
     with col_input:
-        raw = st.text_input(
+        st.text_input(
             f"Turn (0 – {unique_turns[-1]})",
             key=input_key,
+            on_change=_on_turn_input,
         )
-        # Validate: only digits accepted; clamp to valid range on entry
-        if raw != "":
-            if raw.lstrip("-").isdigit():
-                parsed = int(raw)
-                clamped = max(unique_turns[0], min(unique_turns[-1], parsed))
-                if clamped != current:
-                    st.session_state[state_key] = clamped
-                    st.session_state[input_key] = str(clamped)
-                    st.rerun()
-            else:
-                # Non-numeric: reset the box to the last valid turn
-                st.session_state[input_key] = str(current)
-                st.rerun()
 
     current_turn = st.session_state[state_key]
     evts_at_turn = turn_events.get(current_turn, {})
